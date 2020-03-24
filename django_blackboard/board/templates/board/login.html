@@ -1,0 +1,29 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>BlackBoard Login</title>
+		<link rel="stylesheet" type="text/css" href="{% static 'board/login.css' %}">
+	</head>
+	<body>
+		<div class="login-panel">
+			<h1>Welcome!</h1>
+			<form action="../backend/login.php" method="post">
+				{% csrf_token %}
+				<div class="username">
+					<label for="username">Enter username:</label>
+					<br>
+					<input class="chalk" type="text" name="username" size=60>
+					<br>
+				</div>
+				<div class="password">
+					<label for="password">Enter password:</label>
+					<br>
+					<input class="chalk" type="password" name="password" size=60>
+					<br>
+				</div>
+				<button type="submit" class="chalk" name="login">Login</button>
+			</form>
+		</div>
+	</body>
+</html>
