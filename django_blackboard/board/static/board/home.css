@@ -1,0 +1,67 @@
+html {
+	background: url("chalkboard-background.jpg");
+	background-size: cover;
+	background-repeat: no-repeat;
+	align-items: center;
+	background-color: black;
+}
+body {
+	line-height: 1.5em;
+	font-family: chalkduster;
+}
+
+.input {
+	background-color: transparent;
+	border: dashed white;
+	border-radius: 5px;
+	margin-bottom: 10px;
+	box-sizing: border-box;
+	color: white;
+	font-family: chalkduster, serif;
+	padding: 7px;
+	width: 70%;
+}
+
+
+.home-panel {
+	width: 40%;
+	color: white;
+	margin: auto;
+	padding-top: 15%;
+    align-items: center;
+}
+
+.button {
+    align-self: center;
+	background-color: transparent;
+    border: dashed;
+	border-radius: 5px;
+	margin-bottom: 10px;
+    margin-top: 10px;
+	box-sizing: border-box;
+	font-family: chalkduster;
+    font-size: 15px;
+	padding: 7px;
+    width: 75%;
+}
+
+.student {
+    color: white;
+    border-color: white;
+}
+
+.teacher {
+    color: black;
+    border-color: black;
+
+}
+
+.admin {
+    color: goldenrod;
+    border-color: goldenrod;
+}
+
+.error {
+	white-space: pre;
+}
+

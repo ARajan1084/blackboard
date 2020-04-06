@@ -1,15 +1,18 @@
-{% extends "board/base.html"%}
-{% block content%}
-	{% for post in posts %}
-		<article class="media content-section">
-			<div class="media-body">
-				<div class="article-metadata">
-					<a class="mr-2" href="#">{{ post.author }}</a>
-					<small class="text-muted">{{ post.date_posted|date:"F d, Y" }}</small>
-				</div>
-				<h2><a class="article-title" href="#">{{ post.title }}</a></h2>
-				<p class="article-content">{{ post.content }}</p>
-			</div>
-		</article>
-	{% endfor %}
-{% endblock content %}
+{% load static %}
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>BlackBoard Login</title>
+		<link rel="stylesheet" type="text/css" href="{% static 'board/home.css' %}">
+	</head>
+	<body>
+        <div class="home-panel">
+            <h1>Welcome to Blackboard!</h1>
+            <button class="student button" onclick="location.href='{% url "student-board" %}'">Student Board</button>
+            <br>
+            <button class="teacher button" onclick="location.href='{% url "teacher-board" %}'">Teacher Board</button>
+            <br>
+            <button class="admin button">Admin Board</button>
+        </div>
+	</body>
+</html>

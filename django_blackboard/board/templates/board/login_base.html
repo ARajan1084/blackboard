@@ -1,0 +1,32 @@
+{% load static %}
+{% load widget_tweaks %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BlackBoard Login</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'board/login_base.css' %}">
+    {% block background %} {% endblock %}
+</head>
+<body>
+<div class="login-panel">
+    <h1>Welcome!</h1>
+    <form method="post">
+        {% csrf_token %}
+        {% for message in messages %}
+            <div class="error">
+                <p>{{ message }}</p>
+            </div>
+        {% endfor %}
+        <label for="username">Enter username:</label>
+        <br>
+        {{ form.username|add_class:"input" }}
+        <br>
+        <label for="password">Enter password:</label>
+        <br>
+        {{ form.password|add_class:"input" }}
+        <br>
+        <button type="submit" class="button" name="login">Login</button>
+    </form>
+</div>
+</body>
+</html>

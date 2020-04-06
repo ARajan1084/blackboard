@@ -1,5 +1,5 @@
 html {
-	background: url("../images/chalkboard-background.jpg");
+	background: url("../django_blackboard/student/static/student/chalkboard-background.jpg");
 	background-size: cover;
 	background-repeat: no-repeat;
 	align-items: center;

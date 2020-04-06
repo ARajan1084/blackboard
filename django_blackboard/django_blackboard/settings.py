@@ -20,7 +20,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'b76(0#b#_k%y9n4w5&g#wcrr0!5&9l5d0ce!fo_ybd#w!bfxl)'
+SECRET_KEY = 'm-fj&o&_hm&a*1di=b(u953u3pvd1#r6rwsj1(7(n7@x4-qlw@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -31,15 +31,16 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-	'users.apps.UsersConfig',
-	'board.apps.BoardConfig',
-	'crispy_forms',
+    'student.apps.StudentConfig',
+    'board.apps.BoardConfig',
+    'teacher.apps.TeacherConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'widget_tweaks'
 ]
 
 MIDDLEWARE = [
@@ -122,10 +123,5 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-MEDIA_URL = '/media/'
-
-CRISPY_TEMPLATE_PACK = 'bootstrap4'
-
-LOGIN_REDIRECT_URL = 'board-home'
-LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'home'
+LOGIN_URL = 'student-login'

@@ -1,0 +1,14 @@
+{% extends "board/login_base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+{% block background %}
+    <style>
+        html {
+            background: url({% static 'student/chalkboard-background.jpg' %});
+            background-size: cover;
+	        background-repeat: no-repeat;
+	        align-items: center;
+	        background-color: black;
+        }
+    </style>
+{% endblock %}
