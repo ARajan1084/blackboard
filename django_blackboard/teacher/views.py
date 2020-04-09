@@ -9,6 +9,7 @@ from .forms import UserLoginForm
 def home(request):
     return render(request, 'teacher/home.html')
 
+
 def login(request):
     next = request.GET.get('next')
     if request.method == 'POST':
