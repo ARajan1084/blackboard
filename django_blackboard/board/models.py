@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 import uuid
+from django.utils import timezone
 
 
 class Course(models.Model):
@@ -48,6 +49,16 @@ class Assignment(models.Model):
     category_id = models.CharField(max_length=100, unique=False)
     assignment_description = models.CharField(max_length=150, unique=False, null=True)
     points = models.IntegerField()
+    created = models.DateTimeField(null=True, auto_now=True)
+    updated = models.DateTimeField(null=True)
+    assigned = models.DateTimeField(null=True)
+    due_date = models.DateTimeField(null=True)
+
+    def assign(self, due_date):
+        if self.assigned is None:
+            self.assigned = timezone.now()
+        self.updated = timezone.now()
+        self.due_date = due_date
 
     def __str__(self):
         return self.assignment_name

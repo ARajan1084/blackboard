@@ -9,7 +9,7 @@ from board.models import Class, ClassAssignments, Course, Assignment
 from student.models import ClassEnrollment, Student
 
 
-@login_required()
+@login_required(login_url='teacher-login')
 def home(request):
     teacher = Teacher.objects.all().get(user=request.user)
     classes = Class.objects.all().filter(teacher_id=teacher.teacher_id)
@@ -29,6 +29,7 @@ def home(request):
     return render(request, 'teacher/home.html', context)
 
 
+@login_required(login_url='teacher-login')
 def gradesheet(request, class_id):
     student_names = get_student_names(class_id)
     assignments = get_assignments(class_id)

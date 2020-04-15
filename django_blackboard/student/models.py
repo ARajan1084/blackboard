@@ -7,6 +7,7 @@ class Student(models.Model):
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
     student_id = models.CharField(max_length=7, primary_key=True)
+    grade = models.IntegerField(unique=False, default=11)
     id_picture = models.ImageField(upload_to='id_pictures')
     email_address = models.CharField(max_length=320, null=True)
 
@@ -28,3 +29,8 @@ class ClassEnrollment(models.Model):
     class Meta:
         db_table = 'class_enrollment'
         order_with_respect_to = 'student_id'
+
+
+class Submission(models.Model):
+    assignment_id = models.CharField(max_length=100)
+    student_id = models.CharField(max_length=7)
