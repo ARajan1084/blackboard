@@ -1,0 +1,28 @@
+{% extends 'teacher/base.html' %}
+{% load static %}
+
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="{% static 'teacher/gradesheet.css' %}">
+{% endblock %}
+
+{% block body %}
+    <div class="main">
+        <button>New Assignment!</button>
+        <table>
+            <tr>
+                <td class="names"><button>SWAP</button></td>
+                {% for assignment in assignments %}
+                    <td>{{ assignment.assignment_name }}</td>
+                {% endfor %}
+            </tr>
+            {% for student_name in student_names %}
+                <tr>
+                    <td>{{ student_name }}</td>
+                    {% for assignment in assignments %}
+                        <td>{{ assignment.points }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+{% endblock %}

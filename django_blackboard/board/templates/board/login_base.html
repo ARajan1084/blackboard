@@ -11,7 +11,7 @@
 <div class="login-panel">
     <h1>Welcome!</h1>
     <form method="post">
-        {% csrf_token %}
+        {% block crf %}{% endblock %}
         {% for message in messages %}
             <div class="error">
                 <p>{{ message }}</p>

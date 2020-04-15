@@ -7,14 +7,12 @@ class Teacher(models.Model):
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
     teacher_id = models.CharField(max_length=4)
-    id_picture = models.ImageField(upload_to='id_pictures')
+    id_picture = models.ImageField(upload_to='id_pictures', blank=True, default='id_pictures/default_pfp.png')
     email_address = models.CharField(max_length=320)
 
     def __str__(self):
-        return self.first_name+'_'+self.last_name
+        return self.first_name+'_'+self.last_name+'_'+self.teacher_id
 
-
-class TeacherClasses(models.Model):
-    teacher_id = models.CharField(max_length=7, primary_key=True)
-    course_id = models.CharField(max_length=10)
-    period = models.IntegerField()
+    class Meta:
+        db_table = 'teachers'
+        order_with_respect_to = 'teacher_id'

@@ -1,0 +1,19 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+        <title>{% block title %}{% endblock %}</title>
+		<link rel="stylesheet" type="text/css" href="{% static 'student/base.css' %}">
+        {% block css %}{% endblock %}
+	</head>
+	<body>
+        <div class="navigation-bar">
+            <a href="{% url 'student-board' %}">Home</a>
+            <a href="">Locker</a>
+            <a href="">Calendar</a>
+            <a href="{% url 'student-logout' %}">Logout</a>
+		</div>
+        {% block body %}
+        {% endblock %}
+	</body>
+</html>

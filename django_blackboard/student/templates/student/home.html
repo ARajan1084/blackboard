@@ -1,9 +1,34 @@
-<!DOCTYPE html>
-<html>
-	<head>
-		<title>Student Board</title>
-	</head>
-	<body>
-		<h1>Home Page!</h1>
-	</body>
-</html>
+{% extends "student/base.html" %}
+{% load student_extras %}
+{% load static %}
+
+{% block title %}Student Board{% endblock %}
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="{% static 'student/home.css' %}">
+{% endblock %}
+
+{% block body %}
+    <div class="main">
+        <table>
+            <tr>
+                <th class="period_col">P</th>
+                <th>Class</th>
+                <th>Grade</th>
+                <th class="teacher_col">Teacher</th>
+            </tr>
+            {% for class in class_data %}
+                <tr>
+                    <td>{{ class.0 }}</td>
+                    <td>{{ class.1 }}</td>
+                    <td></td>
+                    <td>{{ class.2 }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+        {% for class in class_data %}
+            {% for assignment in class.3 %}
+                <p>{{ assignment.assignment_name }} {{ assignment.points }}</p>
+            {% endfor %}
+        {% endfor %}
+    </div>
+{% endblock %}
