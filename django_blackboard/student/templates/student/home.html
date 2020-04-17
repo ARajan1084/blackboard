@@ -1,5 +1,6 @@
 {% extends "student/base.html" %}
 {% load student_extras %}
+{% load widget_tweaks %}
 {% load static %}
 
 {% block title %}Student Board{% endblock %}
@@ -20,15 +21,10 @@
                 <tr>
                     <td>{{ class.0 }}</td>
                     <td>{{ class.1 }}</td>
-                    <td></td>
+                    <td class="grade">{{ class.3.0 }} ({{ class.3.1 }}%)</td>
                     <td>{{ class.2 }}</td>
                 </tr>
             {% endfor %}
         </table>
-        {% for class in class_data %}
-            {% for assignment in class.3 %}
-                <p>{{ assignment.assignment_name }} {{ assignment.points }}</p>
-            {% endfor %}
-        {% endfor %}
     </div>
 {% endblock %}

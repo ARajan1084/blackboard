@@ -1,4 +1,5 @@
 import csv
+import decimal
 import uuid
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
@@ -6,7 +7,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from .forms import UserLoginForm
 from django.contrib.auth.decorators import login_required
-from .models import Student, ClassEnrollment
+from .models import Student, ClassEnrollment, Submission
 from board.models import Course, Class, ClassAssignments, Assignment, Category, ClassCategories
 from teacher.models import Teacher
 
@@ -17,25 +18,59 @@ def home(request):
     classes = ClassEnrollment.objects.all().filter(student_id=student.student_id)
     class_data = []
     for enrollment in classes:
-        klass = Class.objects.all().get(class_id=enrollment.class_id)
+        klass = Class.objects.all().get(id=enrollment.class_id)
         course = Course.objects.all().get(course_id=klass.course_id)
-        teacher = Teacher.objects.all().get(teacher_id=klass.teacher_id)
+        teacher = Teacher.objects.all().get(id=klass.teacher_id)
         assignment_refs = ClassAssignments.objects.all().filter(class_id=enrollment.class_id)
         assignments = []
         for assignment_ref in assignment_refs:
             assignment = Assignment.objects.all().get(id=uuid.UUID(assignment_ref.assignment_id).hex)
             assignments.append(assignment)
-        print(assignments)
+        grade = calculate_grade(assignments)
         class_data.append(
             [klass.period,
              course.course_name,
              teacher.first_name + ' ' + teacher.last_name,
+             grade,
              assignments]
         )
     context = {
         'class_data': class_data
     }
     return render(request, 'student/home.html', context)
+
+
+def calculate_grade(assignments):
+    categories = {}
+    for assignment in assignments:
+        category = Category.objects.all().get(id=uuid.UUID(assignment.category_id).hex)
+        category_name = category.category_name
+        category_weight = category.category_weight;
+        points = assignment.points
+        earned = Submission.objects.all().get(assignment_id=str(assignment.id.hex)).score
+        sub_score = categories.get(category_name)
+        if sub_score is not None:
+            sub_score[0] += earned
+            sub_score[1] += points
+        else:
+            categories.update({category_name: (earned, points, category_weight)})
+    overall_grade_percent = 0
+    for category_score in categories.values():
+        overall_grade_percent += decimal.Decimal(category_score[0] * 100 / category_score[1]) * category_score[2]
+    return letter_grade(overall_grade_percent), overall_grade_percent
+
+
+def letter_grade(percent):
+    if percent >= 0.9:
+        return 'A'
+    elif percent >= 0.8:
+        return 'B'
+    elif percent >= 0.7:
+        return 'C'
+    elif percent >= 0.6:
+        return 'D'
+    else:
+        return 'F'
 
 
 def login(request):

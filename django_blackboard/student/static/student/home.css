@@ -26,3 +26,8 @@ td {
 .teacher_col {
     width: 150px;
 }
+
+.grade {
+    margin:auto;
+    text-align: center;
+}

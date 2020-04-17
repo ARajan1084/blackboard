@@ -17,22 +17,21 @@ class Course(models.Model):
 
 
 class Class(models.Model):
-    class_id = models.CharField(max_length=20, primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
     course_id = models.CharField(max_length=8, unique=False)
-    teacher_id = models.CharField(max_length=4, unique=False)
+    teacher_id = models.CharField(max_length=100, unique=False)
     period = models.IntegerField()
     weighted = models.BooleanField(unique=False, default=False)
 
     def __str__(self):
-        return self.class_id
+        return self.course_id + '_' + self.teacher_id
 
     class Meta:
         db_table = 'classes'
-        order_with_respect_to = 'class_id'
 
 
 class ClassAssignments(models.Model):
-    class_id = models.CharField(max_length=20, unique=False)
+    class_id = models.CharField(max_length=100, unique=False)
     assignment_id = models.CharField(max_length=100, unique=False)
 
     def __str__(self):
@@ -40,11 +39,10 @@ class ClassAssignments(models.Model):
 
     class Meta:
         db_table = 'class_assignments'
-        order_with_respect_to = 'class_id'
 
 
 class Assignment(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4(), editable=False, unique=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
     assignment_name = models.CharField(max_length=80, unique=False)
     category_id = models.CharField(max_length=100, unique=False)
     assignment_description = models.CharField(max_length=150, unique=False, null=True)
@@ -69,15 +67,14 @@ class Assignment(models.Model):
 
 
 class ClassCategories(models.Model):
-    class_id = models.CharField(max_length=20, unique=False)
-    category_id = models.CharField(max_length=20, unique=False)
+    class_id = models.CharField(max_length=100, unique=False)
+    category_id = models.CharField(max_length=100, unique=False)
 
     def __str__(self):
         return self.class_id + '_' + self.category_id
 
     class Meta:
         db_table = 'class_categories'
-        order_with_respect_to = 'class_id'
 
 
 class Category(models.Model):
@@ -91,4 +88,3 @@ class Category(models.Model):
 
     class Meta:
         db_table = 'categories'
-        order_with_respect_to = 'id'
