@@ -18,7 +18,7 @@
             {% for class in class_data %}
                 <tr>
                     <td>{{ class.0 }}</td>
-                    <td><a href="{% url 'teacher-gradesheet' class_id=class.3%}">{{ class.1 }}</a></td>
+                    <td><a href="{% url 'teacher-gradesheet' class_id=class.3 %}">{{ class.1 }}</a></td>
                     <td>{{ class.2 }}</td>
                 </tr>
             {% endfor %}

@@ -5,10 +5,15 @@
     <link rel="stylesheet" type="text/css" href="{% static 'teacher/gradesheet.css' %}">
 {% endblock %}
 
+{% block title %}Gradesheet: P{{ period }}{% endblock %}
+
 {% block body %}
     <div class="main">
+        <h1>{{ course_name }}, P{{ period }}</h1>
+
         <div class="control_panel">
             <button>New Assignment!</button>
+            <button class="edit_button">Edit</button>
         </div>
 
         <table>
@@ -18,11 +23,11 @@
                     <td>{{ assignment.assignment_name }}</td>
                 {% endfor %}
             </tr>
-            {% for student_name in student_names %}
+            {% for student_name, values in data.items %}
                 <tr>
                     <td>{{ student_name }}</td>
-                    {% for assignment in assignments %}
-                        <td>{{ assignment.points }}</td>
+                    {% for submission in values %}
+                        <td>{{ submission.1.score }} / {{ submission.0.points }}</td>
                     {% endfor %}
                 </tr>
             {% endfor %}
