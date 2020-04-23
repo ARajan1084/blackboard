@@ -1,4 +1,6 @@
 {% extends "board/login_base.html" %}
 {% load static %}
-{% load widget_tweaks %}
+
+{% block title %}Student Login{% endblock %}
+{% block greeting %}Student Login{% endblock %}
 {% block crf %}{% csrf_token %}{% endblock %}
