@@ -1,32 +1,43 @@
 {% load static %}
 {% load widget_tweaks %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>BlackBoard Login</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'board/login_base.css' %}">
-    {% block background %} {% endblock %}
+    <title>Student Login</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="{% static 'board/boot/css/bootstrap.css' %}">
+    <script src="{% static 'board/boot/js/bootstrap.min.js' %}"></script>
 </head>
 <body>
-<div class="login-panel">
-    <h1>Welcome!</h1>
-    <form method="post">
-        {% block crf %}{% endblock %}
-        {% for message in messages %}
-            <div class="error">
-                <p>{{ message }}</p>
+    <div class="container pt-5">
+        <h1>Student Login</h1>
+        <div class="row">
+            <div class="col-lg" style="padding-right:20px; border-right: 1px solid #ccc;">
+                <form method="post">
+                    {% block crf %}{% endblock %}
+                    {% for message in messages %}
+                        <div class="error">
+                            <p>{{ message }}</p>
+                        </div>
+                    {% endfor %}
+                    <div class="form-group">
+                        <label for="username">Enter username:</label>
+                        {{ form.username|add_class:'form-control' }}
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Enter password:</label>
+                        {{ form.password|add_class:'form-control' }}
+                    </div>
+                    <button type="submit" class="btn btn-primary" name="login">Login</button>
+                    <button class="btn btn-light">Forgot Password?</button>
+                </form>
             </div>
-        {% endfor %}
-        <label for="username">Enter username:</label>
-        <br>
-        {{ form.username|add_class:"input" }}
-        <br>
-        <label for="password">Enter password:</label>
-        <br>
-        {{ form.password|add_class:"input" }}
-        <br>
-        <button type="submit" class="button" name="login">Login</button>
-    </form>
-</div>
+            <div class="col-lg">
+                <p>Or Sign in with Google!</p>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

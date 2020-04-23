@@ -6,7 +6,7 @@ from django.contrib.auth import authenticate, login as auth_login, logout as aut
 from django.contrib.auth.decorators import login_required
 from .forms import UserLoginForm
 from .models import Teacher
-from board.models import Class, ClassAssignments, Course, Assignment
+from board.models import Class, ClassAssignments, Course, Assignment, Category, ClassCategories
 from student.models import ClassEnrollment, Student, Submission
 
 
@@ -52,6 +52,7 @@ def gradesheet(request, class_id):
             except:
                 data.update({student_name: ((assignment, submission),)})
     context = {
+        'class_id': class_id,
         'course_name': course_name,
         'period': period,
         'assignments': assignments,
@@ -64,6 +65,17 @@ def get_student_name(enrollment):
     student = Student.objects.all().get(student_id=enrollment.student_id)
     student_name = student.first_name + ' ' + student.last_name
     return student_name
+
+
+def new_assignment(request, class_id):
+    category_ids = ClassCategories.objects.all().filter(class_id=class_id)
+    categories = []
+    for category_id in category_ids:
+        categories.append(Category.objects.all().get(id=uuid.UUID(category_id.category_id).hex))
+    context = {
+        'categories': categories
+    }
+    return render(request, 'teacher/new_assignment.html', context)
 
 
 def login(request):

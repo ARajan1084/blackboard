@@ -12,7 +12,7 @@
         <h1>{{ course_name }}, P{{ period }}</h1>
 
         <div class="control_panel">
-            <button>New Assignment!</button>
+            <button onclick="window.location.href = '{% url 'new-assignment' class_id%}'">New Assignment!</button>
             <button class="edit_button">Edit</button>
         </div>
 

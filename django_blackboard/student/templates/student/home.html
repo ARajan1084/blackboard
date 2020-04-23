@@ -5,26 +5,38 @@
 
 {% block title %}Student Board{% endblock %}
 {% block css %}
-    <link rel="stylesheet" type="text/css" href="{% static 'student/home.css' %}">
 {% endblock %}
 
 {% block body %}
-    <div class="main">
-        <table>
-            <tr>
-                <th class="period_col">P</th>
-                <th>Class</th>
-                <th>Grade</th>
-                <th class="teacher_col">Teacher</th>
-            </tr>
-            {% for class in class_data %}
-                <tr>
-                    <td>{{ class.0 }}</td>
-                    <td>{{ class.1 }}</td>
-                    <td class="grade">{{ class.3.0 }} ({{ class.3.1 }}%)</td>
-                    <td>{{ class.2 }}</td>
-                </tr>
-            {% endfor %}
-        </table>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <h2>Grades</h2>
+                <table class="table table-striped">
+                    <thead class="">
+                        <tr>
+                            <th style="width: 40px">P</th>
+                            <th>Class</th>
+                            <th style="width: 150px">Grade</th>
+                            <th style="width: 200px">Teacher</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for class in class_data %}
+                        <tr>
+                            <td>{{ class.0 }}</td>
+                            <td>{{ class.1 }}</td>
+                            <td class="grade">{{ class.3.0 }} ({{ class.3.1 }}%)</td>
+                            <td>{{ class.2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-lg">
+                <h2>Announcements</h2>
+            </div>
+        </div>
+
     </div>
 {% endblock %}

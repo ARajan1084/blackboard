@@ -1,19 +1,39 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-        <title>{% block title %}{% endblock %}</title>
-		<link rel="stylesheet" type="text/css" href="{% static 'student/base.css' %}">
-        {% block css %}{% endblock %}
-	</head>
-	<body>
-        <div class="navigation-bar">
-            <a href="{% url 'student-board' %}">Home</a>
-            <a href="">Locker</a>
-            <a href="">Calendar</a>
-            <a href="{% url 'student-logout' %}">Logout</a>
-		</div>
-        {% block body %}
-        {% endblock %}
-	</body>
+<head>
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'board/boot/css/bootstrap.css' %}">
+    {% block css %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="#">BlackBoard</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="{% url 'student-board' %}">Home <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Locker</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Calendar</a>
+                </li>
+            </ul>
+            <ul class="navbar-nav align-content-lg-end">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'student-logout' %}">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+{% block body %}
+{% endblock %}
+</body>
 </html>

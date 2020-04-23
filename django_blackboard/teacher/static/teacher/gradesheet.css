@@ -19,16 +19,7 @@ td {
     padding-right: 10px;
 }
 
-button {
-    font-size: 15px;
-    border-radius: 5px;
-    height: 30px;
-}
 
-button:hover {
-    background-color: darkred;
-    color: white;
-}
 
 .names {
     width: 150px;
