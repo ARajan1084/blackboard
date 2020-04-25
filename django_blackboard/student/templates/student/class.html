@@ -1,0 +1,36 @@
+{% extends 'student/base.html' %}
+{% load widget_tweaks %}
+{% load static %}
+
+{% block title %}Class{% endblock %}
+{% block css %}{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Assignment</th>
+                            <th>Submission</th>
+                            <th>Score</th>
+                            <th>Comments</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for assignment, submission in assignments.items %}
+                            <tr>
+                                <td>{{ assignment.assignment_name }}</td>
+                                <td>{{ submission.file }}</td>
+                                <td>{{ submission.score }}/{{ assignment.points }}</td>
+                                <td>{{ submission.comments }}</td>
+                                <td></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -13,6 +13,22 @@ from teacher.models import Teacher
 
 
 @login_required()
+def klass(request, enrollment_id):
+    enrollment = ClassEnrollment.objects.all().get(id=uuid.UUID(enrollment_id).hex)
+    assignment_ids = ClassAssignments.objects.all().filter(class_id=enrollment.class_id)
+    assignments = {}
+    for assignment_ref in assignment_ids:
+        assignment = Assignment.objects.all().get(id=uuid.UUID(assignment_ref.assignment_id).hex)
+        submission = Submission.objects.all().get(enrollment_id=enrollment_id,
+                                                  assignment_id=assignment_ref.assignment_id)
+        assignments.update({assignment: submission})
+    context = {
+        'assignments': assignments
+    }
+    return render(request, 'student/class.html', context)
+
+
+@login_required()
 def home(request):
     student = Student.objects.all().get(user=request.user)
     classes = ClassEnrollment.objects.all().filter(student_id=student.student_id)
@@ -32,7 +48,8 @@ def home(request):
              course.course_name,
              teacher.first_name + ' ' + teacher.last_name,
              grade,
-             assignments]
+             assignments,
+             str(enrollment.id).replace('-', '')]
         )
     context = {
         'class_data': class_data
@@ -45,15 +62,16 @@ def calculate_grade(assignments):
     for assignment in assignments:
         category = Category.objects.all().get(id=uuid.UUID(assignment.category_id).hex)
         category_name = category.category_name
-        category_weight = category.category_weight;
+        category_weight = category.category_weight
         points = assignment.points
         earned = Submission.objects.all().get(assignment_id=str(assignment.id.hex)).score
-        sub_score = categories.get(category_name)
-        if sub_score is not None:
-            sub_score[0] += earned
-            sub_score[1] += points
-        else:
-            categories.update({category_name: (earned, points, category_weight)})
+        if earned is not None:
+            sub_score = categories.get(category_name)
+            if sub_score is not None:
+                sub_score[0] += earned
+                sub_score[1] += points
+            else:
+                categories.update({category_name: (earned, points, category_weight)})
     overall_grade_percent = 0
     for category_score in categories.values():
         overall_grade_percent += decimal.Decimal(category_score[0] * 100 / category_score[1]) * category_score[2]

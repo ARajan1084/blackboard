@@ -1,11 +1,9 @@
 {% extends "student/base.html" %}
-{% load student_extras %}
 {% load widget_tweaks %}
 {% load static %}
 
 {% block title %}Student Board{% endblock %}
-{% block css %}
-{% endblock %}
+{% block css %}{% endblock %}
 
 {% block body %}
     <div class="container">
@@ -25,7 +23,7 @@
                         {% for class in class_data %}
                         <tr>
                             <td>{{ class.0 }}</td>
-                            <td>{{ class.1 }}</td>
+                            <td><a href="{% url 'student-class' class.5 %}">{{ class.1 }}</a></td>
                             <td class="grade">{{ class.3.0 }} ({{ class.3.1 }}%)</td>
                             <td>{{ class.2 }}</td>
                         </tr>
@@ -37,6 +35,5 @@
                 <h2>Announcements</h2>
             </div>
         </div>
-
     </div>
 {% endblock %}

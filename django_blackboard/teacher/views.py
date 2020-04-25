@@ -1,10 +1,12 @@
 import uuid
 from collections import OrderedDict
+from datetime import datetime
+
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
-from .forms import UserLoginForm
+from .forms import UserLoginForm, CreateAssignmentForm
 from .models import Teacher
 from board.models import Class, ClassAssignments, Course, Assignment, Category, ClassCategories
 from student.models import ClassEnrollment, Student, Submission
@@ -71,18 +73,49 @@ def new_assignment(request, class_id):
     category_ids = ClassCategories.objects.all().filter(class_id=class_id)
     categories = []
     for category_id in category_ids:
-        categories.append(Category.objects.all().get(id=uuid.UUID(category_id.category_id).hex))
-    context = {
-        'categories': categories
-    }
-    return render(request, 'teacher/new_assignment.html', context)
+        category_name = Category.objects.all().get(id=uuid.UUID(category_id.category_id).hex).category_name
+        categories.append((category_id.category_id, category_name))
+
+    if request.method == 'POST':
+        form = CreateAssignmentForm(request.POST, categories=categories)
+        if form.is_valid():
+            name = form.cleaned_data.get('name')
+            description = form.cleaned_data.get('description')
+            category_id = form.cleaned_data.get('category')
+            points = form.cleaned_data.get('points')
+            due_date = form.cleaned_data.get('due_date')
+            due_time = form.cleaned_data.get('due_time')
+            due = datetime.combine(due_date, due_time)
+            assignment = Assignment(assignment_name=name,
+                                    assignment_description=description,
+                                    category_id=category_id,
+                                    points=points,
+                                    due_date=due)
+            enrollments = ClassEnrollment.objects.all().filter(class_id=class_id)
+            for enrollment in enrollments:
+                submission = Submission(assignment_id=str(assignment.id).replace('-', ''),
+                                        enrollment_id=str(enrollment.id).replace('-', ''))
+                submission.save()
+            assignment.save()
+            class_assignmnet = ClassAssignments(class_id=class_id, assignment_id=str(assignment.id).replace('-', ''))
+            class_assignmnet.save()
+            return gradesheet(request, class_id)
+        else:
+            print(form.errors)
+            print(form.non_field_errors())
+    else:
+        form = CreateAssignmentForm(categories=categories)
+        context = {
+            'categories': categories,
+            'form': form
+        }
+        return render(request, 'teacher/new_assignment.html', context)
 
 
 def login(request):
     next = request.GET.get('next')
     if request.method == 'POST':
         form = UserLoginForm(request.POST)
-
         if form.is_valid():
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password')

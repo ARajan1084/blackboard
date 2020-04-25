@@ -1,33 +1,48 @@
 {% extends 'teacher/base.html' %}
 {% load static %}
-
-{% block css %}
-    <link rel="stylesheet" type="text/css" href="{% static 'teacher/new_assignment.css'%}">
-{% endblock %}
+{% load widget_tweaks %}
+{% block css %}{% endblock %}
 
 {% block title %}Create a New Assignment{% endblock %}
 
 {% block body %}
-    <div class="main">
-    <h1>New Assignment:</h1>
-        <form action="">
-            <fieldset>
-                <legend>Assignment Info</legend>
+    <div class="container pt-3">
+        <h1>New Assignment:</h1>
+        <h1>{{ form.errors }}</h1>
+        <h1>{{ form.non_field_errors }}</h1>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
                 <label for="assignment_name">Name: </label>
-                <input type="text" id="assignment_name" name="assignment_name"><br>
+                {{ form.name|add_class:'form-control' }}
+            </div>
+            <div class="form-group">
                 <label for="assignment_description">Description: </label>
-                <input type="text" id="assignment_description" name="assigment_description"><br>
-                <label for="category">Category: </label>
-                <select name="category" id="category">
-                    {% for category in categories %}
-                        <option value="{{ category.id }}">{{ category.category_name }}</option>
-                    {% endfor %}
-                </select>
-            </fieldset>
-            <div class="form_buttons">
-                <button>Discard</button>
-                <button>Save</button>
-                <button>Assign</button>
+                {{ form.description|add_class:'form-control' }}
+            </div>
+            <label for="category">Category</label>
+            <div class="input-group">
+                {{ form.category|add_class:'form-control'}}
+                <button class="btn btn-light">New Category...</button>
+            </div>
+            <div class="input-group pt-4">
+                <div class="form-group pr-2">
+                    <label for="points">Points:</label>
+                    {{ form.points|add_class:'form-control' }}
+                </div>
+                <div class="form-group">
+                    <label for="date">Due Date:</label>
+                    {{ form.due_date|add_class:'form-control' }}
+                </div>
+                <div class="form-group">
+                    <label for="time">Time:</label>
+                    {{ form.due_time|add_class:'form-control' }}
+                </div>
+            </div>
+            <div class="">
+                <button class="btn btn-danger">Discard</button>
+                <button type="submit" class="btn btn-primary float-right">Assign</button>
+                <button class="btn btn-light float-right">Save</button>
             </div>
         </form>
     </div>

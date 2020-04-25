@@ -1,36 +1,37 @@
 {% extends 'teacher/base.html' %}
 {% load static %}
 
-{% block css %}
-    <link rel="stylesheet" type="text/css" href="{% static 'teacher/gradesheet.css' %}">
-{% endblock %}
-
+{% block css %}{% endblock %}
 {% block title %}Gradesheet: P{{ period }}{% endblock %}
 
 {% block body %}
-    <div class="main">
+    <div class="container pt-4">
         <h1>{{ course_name }}, P{{ period }}</h1>
-
-        <div class="control_panel">
-            <button onclick="window.location.href = '{% url 'new-assignment' class_id%}'">New Assignment!</button>
-            <button class="edit_button">Edit</button>
+        <div class="row pt-4 clearfix">
+            <button class="btn btn-light" onclick="window.location.href = '{% url 'new-assignment' class_id%}'">New Assignment!</button>
+            <button class="btn btn-primary ml-auto">Edit</button>
         </div>
-
-        <table>
-            <tr>
-                <td class="names"><button>SWAP</button></td>
-                {% for assignment in assignments %}
-                    <td>{{ assignment.assignment_name }}</td>
-                {% endfor %}
-            </tr>
-            {% for student_name, values in data.items %}
-                <tr>
-                    <td>{{ student_name }}</td>
-                    {% for submission in values %}
-                        <td>{{ submission.1.score }} / {{ submission.0.points }}</td>
+        <div class="row pt-3">
+            <table class="table table-sm table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <td class="" style="width: 200px"><button class="btn btn-light">SWAP</button></td>
+                        {% for assignment in assignments %}
+                            <td>{{ assignment.assignment_name }}</td>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student_name, values in data.items %}
+                        <tr>
+                            <td>{{ student_name }}</td>
+                            {% for submission in values %}
+                                <td>{{ submission.1.score }} / {{ submission.0.points }}</td>
+                            {% endfor %}
+                        </tr>
                     {% endfor %}
-                </tr>
-            {% endfor %}
-        </table>
+                </tbody>
+            </table>
+        </div>
     </div>
 {% endblock %}

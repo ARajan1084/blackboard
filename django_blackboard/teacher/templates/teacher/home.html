@@ -3,25 +3,31 @@
 {% load static %}
 
 {% block title %}Student Board{% endblock %}
-{% block css %}
-    <link rel="stylesheet" type="text/css" href="{% static 'teacher/home.css' %}">
-{% endblock %}
+{% block css %}{% endblock %}
 
 {% block body %}
-    <div class="main">
-        <table>
-            <tr>
-                <th class="period_col">P</th>
-                <th>Class</th>
-                <th class="enrolled_col">Enrolled</th>
-            </tr>
-            {% for class in class_data %}
-                <tr>
-                    <td>{{ class.0 }}</td>
-                    <td><a href="{% url 'teacher-gradesheet' class_id=class.3 %}">{{ class.1 }}</a></td>
-                    <td>{{ class.2 }}</td>
-                </tr>
-            {% endfor %}
-        </table>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px">P</th>
+                            <th>Class</th>
+                            <th style="width: 100px;">Enrolled</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for class in class_data %}
+                            <tr>
+                                <td>{{ class.0 }}</td>
+                                <td><a href="{% url 'teacher-gradesheet' class_id=class.3 %}">{{ class.1 }}</a></td>
+                                <td class="text-center">{{ class.2 }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 {% endblock %}

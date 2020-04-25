@@ -19,7 +19,7 @@
                     {% block crf %}{% endblock %}
                     {% for message in messages %}
                         <div class="error">
-                            <p>{{ message }}</p>
+                            <div class="alert alert-danger">{{ message }}</div>
                         </div>
                     {% endfor %}
                     <div class="form-group">
