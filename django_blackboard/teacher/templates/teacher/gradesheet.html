@@ -1,5 +1,6 @@
 {% extends 'teacher/base.html' %}
 {% load static %}
+{% load teacher_extras %}
 
 {% block css %}{% endblock %}
 {% block title %}Gradesheet: P{{ period }}{% endblock %}
@@ -8,7 +9,7 @@
     <div class="container pt-4">
         <h1>{{ course_name }}, P{{ period }}</h1>
         <div class="row pt-4 clearfix">
-            <button class="btn btn-light" onclick="window.location.href = '{% url 'new-assignment' class_id%}'">New Assignment!</button>
+            <button class="btn btn-light" onclick="window.location.href = '{% url 'teacher-new-assignment' class_id%}'">New Assignment!</button>
             <button class="btn btn-primary ml-auto">Edit</button>
         </div>
         <div class="row pt-3">
@@ -17,7 +18,7 @@
                     <tr>
                         <td class="" style="width: 200px"><button class="btn btn-light">SWAP</button></td>
                         {% for assignment in assignments %}
-                            <td>{{ assignment.assignment_name }}</td>
+                            <td><a href="{% url 'teacher-assignment' assignment_id=assignment.id|uuid_to_str edit='edit=false' %}">{{ assignment.assignment_name }}</a></td>
                         {% endfor %}
                     </tr>
                 </thead>

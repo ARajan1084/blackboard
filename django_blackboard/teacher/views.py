@@ -6,7 +6,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
-from .forms import UserLoginForm, CreateAssignmentForm
+from .forms import UserLoginForm, CreateAssignmentForm, Score
 from .models import Teacher
 from board.models import Class, ClassAssignments, Course, Assignment, Category, ClassCategories
 from student.models import ClassEnrollment, Student, Submission
@@ -110,6 +110,24 @@ def new_assignment(request, class_id):
             'form': form
         }
         return render(request, 'teacher/new_assignment.html', context)
+
+
+def assignment(request, assignment_id, edit):
+    assignment = Assignment.objects.all().get(id=uuid.UUID(assignment_id).hex)
+    form = Score()
+    submissions = Submission.objects.all().filter(assignment_id=assignment_id)
+    student_scores = {}
+    for submission in submissions:
+        class_enrollment = ClassEnrollment.objects.all().get(id=uuid.UUID(submission.enrollment_id).hex)
+        student = Student.objects.all().get(student_id=class_enrollment.student_id)
+        student_scores.update({student: submission})
+    context = {
+        'edit': edit,
+        'form': form,
+        'assignment': assignment,
+        'student_scores': student_scores
+    }
+    return render(request, 'teacher/assignment.html', context)
 
 
 def login(request):

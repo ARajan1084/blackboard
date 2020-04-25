@@ -1,0 +1,50 @@
+{% extends 'teacher/base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% load teacher_extras %}
+
+{% block title %}Assignment{% endblock %}
+{% block css %}{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <div class="row pt-3">
+            <div class="col">
+                <h1>{{ assignment.assignment_name }}</h1>
+                <form class="" method="post">
+                    <button class="btn btn-danger">Delete</button>
+                    {% if edit == "edit=false" %}
+                        <button type="button" class="btn btn-primary float-right"
+                                onclick="location.href='{% url 'teacher-assignment' assignment_id=assignment.id|uuid_to_str edit='edit=true' %}'">Edit</button>
+                    {% else %}
+                        <button class="btn btn-primary float-right" type="submit">Save</button>
+                        <button type="button" class="btn btn-light float-right"
+                                onclick="location.href='{% url 'teacher-assignment' assignment_id=assignment.id|uuid_to_str edit='edit=false' %}'">Cancel</button>
+                    {% endif %}
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th style="width:150px">Score ({{ assignment.points }})</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student, submission in student_scores.items %}
+                                <tr>
+                                    <td>{{ student.first_name }} {{ student.last_name }}</td>
+                                    {% if edit == "edit=true" %}
+                                        <td>
+                                            {{ form.score|add_class:'form-control' }}
+                                        </td>
+                                    {% else %}
+                                        <td>{{ submission.score }} / {{ assignment.points }}</td>
+                                    {% endif %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
