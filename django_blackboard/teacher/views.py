@@ -36,6 +36,8 @@ def home(request):
 def klass(request, element, class_id):
     if element == 'gradesheet':
         return gradesheet(request, class_id, active=element)
+    elif element == 'dashboard':
+        return dashboard(request, class_id, active=element)
     elif element == 'resources':
         return resources(request, class_id, active=element)
     elif element == 'discussions':
@@ -79,6 +81,21 @@ def get_student_name(enrollment):
     student = Student.objects.all().get(student_id=enrollment.student_id)
     student_name = student.first_name + ' ' + student.last_name
     return student_name
+
+
+@login_required(login_url='teacher-login')
+def dashboard(request, class_id, active):
+    klass = Class.objects.all().get(id=uuid.UUID(class_id).hex)
+    course_name = Course.objects.all().get(course_id=klass.course_id).course_name
+    period = klass.period;
+    context = {
+        'active': active,
+        'class_id': class_id,
+        'period': period,
+        'course_name': course_name
+    }
+    return render(request, 'teacher/dashboard.html', context)
+
 
 
 @login_required(login_url='teacher-login')
