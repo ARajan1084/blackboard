@@ -1,9 +1,12 @@
 from django import forms
-from django.contrib.admin.widgets import AdminSplitDateTime
 
 
-class Score(forms.Form):
-    score = forms.IntegerField(required=False)
+class Scores(forms.Form):
+    def __init__(self, *args, **kwargs):
+        student_scores = kwargs.pop('student_scores')
+        super(Scores, self).__init__(*args, **kwargs)
+        for student_score in student_scores:
+            self.fields[student_score[0].student_id] = forms.IntegerField(required=False, initial=student_score[1])
 
 
 class UserLoginForm(forms.Form):

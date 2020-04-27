@@ -1,4 +1,4 @@
-from django.urls import path, include
+from django.urls import path
 from . import views
 
 
@@ -6,7 +6,7 @@ urlpatterns = [
     path('', views.home, name='teacher-board'),
     path('login/', views.login, name='teacher-login'),
     path('logout/', views.logout, name='teacher-logout'),
-    path('gradesheet/<class_id>', views.gradesheet, name='teacher-gradesheet'),
-    path('new_assignment/<class_id>', views.new_assignment, name='teacher-new-assignment'),
-    path('assignment/<str:assignment_id>/<str:edit>', views.assignment, name='teacher-assignment')
+    path('class/<str:element>/<str:class_id>', views.klass, name='teacher-class'),
+    path('new_assignment/<str:class_id>', views.new_assignment, name='teacher-new-assignment'),
+    path('assignment/<str:class_id>/<str:assignment_id>/<str:edit>', views.assignment, name='teacher-assignment')
 ]

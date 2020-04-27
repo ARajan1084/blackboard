@@ -12,14 +12,15 @@
             <div class="col">
                 <h1>{{ assignment.assignment_name }}</h1>
                 <form class="" method="post">
-                    <button class="btn btn-danger">Delete</button>
+                    {% csrf_token %}
                     {% if edit == "edit=false" %}
+                        <button class="btn btn-danger" name="delete">Delete</button>
                         <button type="button" class="btn btn-primary float-right"
-                                onclick="location.href='{% url 'teacher-assignment' assignment_id=assignment.id|uuid_to_str edit='edit=true' %}'">Edit</button>
+                                onclick="location.href='{% url 'teacher-assignment' class_id=class_id assignment_id=assignment.id|uuid_to_str edit='edit=true' %}'">Edit</button>
                     {% else %}
-                        <button class="btn btn-primary float-right" type="submit">Save</button>
+                        <button class="btn btn-primary float-right" type="submit" name="save">Save</button>
                         <button type="button" class="btn btn-light float-right"
-                                onclick="location.href='{% url 'teacher-assignment' assignment_id=assignment.id|uuid_to_str edit='edit=false' %}'">Cancel</button>
+                                onclick="location.href='{% url 'teacher-assignment' class_id=class_id assignment_id=assignment.id|uuid_to_str edit='edit=false' %}'">Cancel</button>
                     {% endif %}
                     <table class="table table-striped">
                         <thead>
@@ -33,9 +34,7 @@
                                 <tr>
                                     <td>{{ student.first_name }} {{ student.last_name }}</td>
                                     {% if edit == "edit=true" %}
-                                        <td>
-                                            {{ form.score|add_class:'form-control' }}
-                                        </td>
+                                        <td> {{ form|get_field:student|add_class:'form-control' }}</td>
                                     {% else %}
                                         <td>{{ submission.score }} / {{ assignment.points }}</td>
                                     {% endif %}

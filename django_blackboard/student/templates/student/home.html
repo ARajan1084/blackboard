@@ -23,7 +23,7 @@
                         {% for class in class_data %}
                         <tr>
                             <td>{{ class.0 }}</td>
-                            <td><a href="{% url 'student-class' class.5 %}">{{ class.1 }}</a></td>
+                            <td><a href="{% url 'student-class' element='grades' enrollment_id=class.5 %}">{{ class.1 }}</a></td>
                             <td class="grade">{{ class.3.0 }} ({{ class.3.1 }}%)</td>
                             <td>{{ class.2 }}</td>
                         </tr>

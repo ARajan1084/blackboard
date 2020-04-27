@@ -1,0 +1,55 @@
+{% extends 'student/class.html' %}
+{% load static %}
+
+{% block css %}{% endblock%}
+
+{% block content %}
+    <div class="row pt-3">
+        <div class="col-lg-8">
+            <h2>Assignments</h2>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Assignment</th>
+                        <th>Submission</th>
+                        <th>Score</th>
+                        <th>Comments</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for assignment, info in assignments.items %}
+                        <tr>
+                            <td>
+                                <small class="text-muted">{{ info.0 }}</small> <br>
+                                {{ assignment.assignment_name }}
+                            </td>
+                            <td>{{ info.1.file }}</td>
+                            <td class="align-middle">{{ info.1.score }}/{{ assignment.points }}</td>
+                            <td class="align-middle">{{ info.1.comments }}</td>
+                            <td></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="col-lg-4">
+            <h2>Breakdown</h2>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Percentage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category, percentage in grades.2.items %}
+                        <tr>
+                            <td>{{ category }}</td>
+                            <td class="text-center">{{ percentage }}%</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

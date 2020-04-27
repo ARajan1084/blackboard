@@ -2,11 +2,11 @@ import uuid
 from collections import OrderedDict
 from datetime import datetime
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, reverse
 from django.contrib import messages
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
-from .forms import UserLoginForm, CreateAssignmentForm, Score
+from .forms import UserLoginForm, CreateAssignmentForm, Scores
 from .models import Teacher
 from board.models import Class, ClassAssignments, Course, Assignment, Category, ClassCategories
 from student.models import ClassEnrollment, Student, Submission
@@ -33,7 +33,17 @@ def home(request):
 
 
 @login_required(login_url='teacher-login')
-def gradesheet(request, class_id):
+def klass(request, element, class_id):
+    if element == 'gradesheet':
+        return gradesheet(request, class_id, active=element)
+    elif element == 'resources':
+        return resources(request, class_id, active=element)
+    elif element == 'discussions':
+        return discussions(request, class_id, active=element)
+
+
+@login_required(login_url='teacher-login')
+def gradesheet(request, class_id, active):
     klass = Class.objects.all().get(id=uuid.UUID(class_id).hex)
     course_name = Course.objects.all().get(course_id=klass.course_id).course_name
     period = klass.period;
@@ -46,7 +56,8 @@ def gradesheet(request, class_id):
     for enrollment in enrollments:
         student_name = get_student_name(enrollment)
         for assignment in assignments:
-            submission = Submission.objects.get(enrollment_id=str(enrollment.id.hex), assignment_id=str(assignment.id.hex))
+            submission = Submission.objects.get(enrollment_id=str(enrollment.id.hex),
+                                                assignment_id=str(assignment.id.hex))
             try:
                 current = data[student_name]
                 score = (assignment, submission)
@@ -54,6 +65,7 @@ def gradesheet(request, class_id):
             except:
                 data.update({student_name: ((assignment, submission),)})
     context = {
+        'active': active,
         'class_id': class_id,
         'course_name': course_name,
         'period': period,
@@ -67,6 +79,33 @@ def get_student_name(enrollment):
     student = Student.objects.all().get(student_id=enrollment.student_id)
     student_name = student.first_name + ' ' + student.last_name
     return student_name
+
+
+@login_required(login_url='teacher-login')
+def resources(request, class_id, active):
+    klass = Class.objects.all().get(id=uuid.UUID(class_id).hex)
+    course_name = Course.objects.all().get(course_id=klass.course_id).course_name
+    period = klass.period;
+    context = {
+        'active': active,
+        'class_id': class_id,
+        'period': period,
+        'course_name': course_name
+    }
+    return render(request, 'teacher/resources.html', context)
+
+
+def discussions(request, class_id, active):
+    klass = Class.objects.all().get(id=uuid.UUID(class_id).hex)
+    course_name = Course.objects.all().get(course_id=klass.course_id).course_name
+    period = klass.period
+    context = {
+        'active': active,
+        'class_id': class_id,
+        'period': period,
+        'course_name': course_name
+    }
+    return render(request, 'teacher/discussions.html', context)
 
 
 def new_assignment(request, class_id):
@@ -99,35 +138,83 @@ def new_assignment(request, class_id):
             assignment.save()
             class_assignmnet = ClassAssignments(class_id=class_id, assignment_id=str(assignment.id).replace('-', ''))
             class_assignmnet.save()
-            return gradesheet(request, class_id)
+            return gradesheet(request, class_id, active='gradesheet')
         else:
             print(form.errors)
             print(form.non_field_errors())
     else:
         form = CreateAssignmentForm(categories=categories)
         context = {
+            'class_id': class_id,
             'categories': categories,
             'form': form
         }
         return render(request, 'teacher/new_assignment.html', context)
 
 
-def assignment(request, assignment_id, edit):
+def assignment(request, class_id, assignment_id, edit):
     assignment = Assignment.objects.all().get(id=uuid.UUID(assignment_id).hex)
-    form = Score()
-    submissions = Submission.objects.all().filter(assignment_id=assignment_id)
+    class_assignment = ClassAssignments.objects.all().get(class_id=class_id, assignment_id=assignment_id)
+    student_scores = get_students(assignment_id)
+
+    if request.method == 'POST':
+        form = Scores(request.POST, student_scores=student_scores)
+        if form.is_valid():
+            for student_id, score in form.cleaned_data.items():
+                enrollment = ClassEnrollment.objects.all().get(student_id=student_id, class_id=class_id)
+                submission = Submission.objects.all().get(enrollment_id=str(enrollment.id).replace('-', ''),
+                                                          assignment_id=assignment_id)
+                if 'save' in request.POST:
+                    submission.score = score
+                    submission.save()
+                elif 'delete' in request.POST:
+                    submission.delete()
+
+            if 'delete' in request.POST:
+                assignment.delete()
+                class_assignment.delete()
+                return redirect('teacher-class', element='gradesheet', class_id=class_id)
+
+            edit = 'edit=false'
+
+    form = Scores(student_scores=student_scores)
+    submissions = get_submissions(class_id, assignment_id)
     student_scores = {}
     for submission in submissions:
         class_enrollment = ClassEnrollment.objects.all().get(id=uuid.UUID(submission.enrollment_id).hex)
         student = Student.objects.all().get(student_id=class_enrollment.student_id)
         student_scores.update({student: submission})
     context = {
+        'class_id': class_id,
         'edit': edit,
         'form': form,
         'assignment': assignment,
         'student_scores': student_scores
     }
     return render(request, 'teacher/assignment.html', context)
+
+
+def get_submissions(class_id, assignment_id):
+    class_enrollments = ClassEnrollment.objects.all().filter(class_id=class_id)
+    submissions = []
+    for enrollment in class_enrollments:
+        submission = Submission.objects.all().get(enrollment_id=str(enrollment.id).replace('-', ''),
+                                                  assignment_id=assignment_id)
+        submissions.append(submission)
+    return submissions
+
+
+def get_students(assignment_id):
+    class_assignment = ClassAssignments.objects.all().get(assignment_id=assignment_id)
+    klass = Class.objects.all().get(id=uuid.UUID(class_assignment.class_id).hex)
+    class_enrollments = ClassEnrollment.objects.all().filter(class_id=str(klass.id).replace('-', ''))
+    student_scores = []
+    for enrollment in class_enrollments:
+        student = Student.objects.all().get(student_id=enrollment.student_id)
+        submission_score = Submission.objects.all().get(enrollment_id=str(enrollment.id).replace('-', ''),
+                                                        assignment_id=assignment_id).score
+        student_scores.append((student, submission_score))
+    return student_scores
 
 
 def login(request):
