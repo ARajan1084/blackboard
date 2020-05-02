@@ -30,10 +30,44 @@
                         {% endfor %}
                     </tbody>
                 </table>
+                {% if due_tomorrow %}
+                    <h2>Due Tomorrow</h2>
+                    <table class="table table-striped">
+                        {% for assignment, submission in due_tomorrow.items %}
+                            <tr>
+                                <td>{{ assignment.assignment_name }}</td>
+                                <td>{{ assignment.points }} Points</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% endif %}
+                {% if due_in_three_days %}
+                    <h2>Due in 3 Days</h2>
+                    <table class="table table-striped">
+                        {% for assignment, submission in due_in_three_days.items %}
+                            <tr>
+                                <td>{{ assignment.assignment_name }}</td>
+                                <td>{{ assignment.points }} Points</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% endif %}
+                {% if due_in_a_week %}
+                    <h2>Due in a Week</h2>
+                    <table class="table table-striped">
+                        {% for assignment, submission in due_in_a_week.items %}
+                            <tr>
+                                <td>{{ assignment.assignment_name }}</td>
+                                <td>{{ assignment.points }} Points</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% endif %}
             </div>
             <div class="col-lg">
                 <h2>Announcements</h2>
             </div>
         </div>
+
     </div>
 {% endblock %}

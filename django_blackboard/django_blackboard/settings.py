@@ -31,6 +31,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'easy_thumbnails',
+    'filer',
     'student.apps.StudentConfig',
     'board.apps.BoardConfig',
     'teacher.apps.TeacherConfig',
@@ -119,6 +121,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 LOGIN_REDIRECT_URL = 'home'
 LOGIN_URL = 'student-login'

@@ -6,6 +6,8 @@ from django.shortcuts import render, redirect, reverse
 from django.contrib import messages
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+
 from .forms import UserLoginForm, CreateAssignmentForm, Scores
 from .models import Teacher
 from board.models import Class, ClassAssignments, Course, Assignment, Category, ClassCategories
@@ -48,7 +50,7 @@ def klass(request, element, class_id):
 def gradesheet(request, class_id, active):
     klass = Class.objects.all().get(id=uuid.UUID(class_id).hex)
     course_name = Course.objects.all().get(course_id=klass.course_id).course_name
-    period = klass.period;
+    period = klass.period
     enrollments = ClassEnrollment.objects.all().filter(class_id=class_id)
     assignment_ids = ClassAssignments.objects.all().filter(class_id=class_id)
     assignments = []
@@ -146,7 +148,8 @@ def new_assignment(request, class_id):
                                     assignment_description=description,
                                     category_id=category_id,
                                     points=points,
-                                    due_date=due)
+                                    due_date=due,
+                                    assigned=timezone.now())
             enrollments = ClassEnrollment.objects.all().filter(class_id=class_id)
             for enrollment in enrollments:
                 submission = Submission(assignment_id=str(assignment.id).replace('-', ''),

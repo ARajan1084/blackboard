@@ -1,18 +1,27 @@
 {% load static %}
+{% load widget_tweaks %}
 <!DOCTYPE html>
-<html>
-	<head>
-		<title>BlackBoard Login</title>
-		<link rel="stylesheet" type="text/css" href="{% static 'board/home.css' %}">
-	</head>
-	<body>
-        <div class="home-panel">
-            <h1>Welcome to Blackboard!</h1>
-            <button class="student button" onclick="location.href='{% url "student-board" %}'">Student Board</button>
-            <br>
-            <button class="teacher button" onclick="location.href='{% url "teacher-board" %}'">Teacher Board</button>
-            <br>
-            <button class="admin button">Admin Board</button>
+<html lang="en">
+<head>
+    <title>Welcome to Blackboard</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="{% static 'board/boot/css/bootstrap.css' %}">
+    <script src="{% static 'board/boot/js/bootstrap.min.js' %}"></script>
+</head>
+<body>
+        <div class="row">
+            <div class="col-3 align-self-center">
+                <div class="card card-body">
+                    <h1>Welcome to Blackboard!</h1>
+                    <button class="btn btn-outline-primary" onclick="location.href='{% url "student-board" %}'">Student Board</button>
+                    <br>
+                    <button class="btn btn-outline-secondary" onclick="location.href='{% url "teacher-board" %}'">Teacher Board</button>
+                    <br>
+                    <button class="btn btn-outline-danger">Admin Board</button>
+                </div>
+            </div>
         </div>
-	</body>
+</body>
 </html>

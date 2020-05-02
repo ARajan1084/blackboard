@@ -3,7 +3,24 @@
 {% load static %}
 
 {% block css %}{% endblock %}
-{% block title %}{% endblock %}
+{% block title %}P{{ period }}: Resources{% endblock %}
 
 {% block content %}
+    <div class="card card-body pt-4">
+        <div class="row">
+            <div class="col-lg-3" style="padding-right:20px; border-right: 1px solid #ccc;">
+                <ul class="nav flex-column">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Example Folder</a>
+                        <div class="dropdown-menu">
+                            <a href="" class="dropdown-item">Example File</a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-lg-8">
+                <h3>Who you callin Mike</h3>
+            </div>
+        </div>
+    </div>
 {% endblock %}

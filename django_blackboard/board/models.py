@@ -4,6 +4,16 @@ import uuid
 from django.utils import timezone
 
 
+class Schedule(models.Model):
+    period = models.CharField(unique=False, max_length=8)
+    day = models.CharField(unique=False, max_length=10)
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+
+    def __str__(self):
+        return self.period + '_' + self.day + '_' + str(self.start_time) + '_' + str(self.end_time)
+
+
 class Course(models.Model):
     course_id = models.CharField(max_length=8, primary_key=True)
     course_name = models.CharField(max_length=25)
