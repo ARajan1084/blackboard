@@ -22,6 +22,20 @@ class TimeInput(forms.TimeInput):
     input_type = 'time'
 
 
+class CreateCategoryForm(forms.Form):
+    name = forms.CharField()
+    description = forms.CharField(required=False)
+    weight = forms.DecimalField(required=False)
+
+
+class EditCategoriesForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        categories = kwargs.pop('categories')
+        super(EditCategoriesForm, self).__init__(*args, **kwargs)
+        for category in categories:
+            self.fields[str(category.id.hex)] = forms.DecimalField(required=False, initial=category.category_weight)
+
+
 class CreateAssignmentForm(forms.Form):
     category = forms.ChoiceField()
     name = forms.CharField()

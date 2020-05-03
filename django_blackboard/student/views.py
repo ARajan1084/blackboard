@@ -34,11 +34,17 @@ def grades(request, enrollment_id, active):
     assignments = {}
     for assignment_ref in assignment_ids:
         assignment = Assignment.objects.all().get(id=uuid.UUID(assignment_ref.assignment_id).hex)
-        category_name = Category.objects.all().get(id=uuid.UUID(assignment.category_id).hex)
-        submission = Submission.objects.all().get(enrollment_id=enrollment_id,
-                                                  assignment_id=assignment_ref.assignment_id)
-        assignments.update({assignment: (category_name, submission)})
-    grades = calculate_grade(assignments.keys())
+        if assignment.due_date < timezone.now():
+            category_name = Category.objects.all().get(id=uuid.UUID(assignment.category_id).hex)
+            submission = Submission.objects.all().get(enrollment_id=enrollment_id,
+                                                      assignment_id=assignment_ref.assignment_id)
+            assignments.update({assignment: (category_name, submission)})
+        else:
+            print(assignment)
+    if klass.weighted:
+        grades = calculate_weighted_grade(assignments.keys(), enrollment_id)
+    else:
+        grades = calculate_grade(assignments.keys(), enrollment_id)
     context = {
         'active': active,
         'enrollment_id': enrollment_id,
@@ -100,7 +106,7 @@ def home(request):
     student = Student.objects.all().get(user=request.user)
     classes = ClassEnrollment.objects.all().filter(student_id=student.student_id)
 
-    day_of_week = day_index_to_weekday(timezone.now().date().weekday())
+    day_of_week = timezone.now().date().weekday()
     schedule = Schedule.objects.all().filter(day=day_of_week)
 
     submissions = {}
@@ -113,11 +119,14 @@ def home(request):
         class_assignments = []
         for assignment_ref in assignment_refs:
             assignment = Assignment.objects.all().get(id=uuid.UUID(assignment_ref.assignment_id).hex)
-            submission = Submission.objects.all().get(assignment_id=str(assignment.id).replace('-', ''),
-                                                      enrollment_id=str(enrollment.id).replace('-', ''))
+            submission = Submission.objects.all().get(assignment_id=str(assignment.id.hex),
+                                                      enrollment_id=str(enrollment.id.hex))
             submissions.update({assignment: submission})
             class_assignments.append(assignment)
-        grade = calculate_grade(class_assignments)
+        if klass.weighted:
+            grade = calculate_weighted_grade(class_assignments, str(enrollment.id.hex))
+        else:
+            grade = calculate_grade(class_assignments, str(enrollment.id.hex))
         class_data.append(
             [klass.period,
              course.course_name,
@@ -168,27 +177,26 @@ def fetch_upcoming_tests(submissions):
     return tests
 
 
-def day_index_to_weekday(index):
-    weekdays = {
-        0: 'Monday',
-        1: 'Tuesday',
-        2: 'Wednesday',
-        3: 'Thursday',
-        4: 'Friday',
-        5: 'Saturday',
-        6: 'Sunday'
-    }
-    return weekdays[index]
+def calculate_grade(assignments, enrollment_id):
+    if not assignments:
+        return None
+    total_score = [0, 0]
+    for assignment in assignments:
+        points = assignment.points
+        earned = Submission.objects.all().get(enrollment_id=enrollment_id, assignment_id=str(assignment.id.hex)).score
+        total_score[0] += earned
+        total_score[1] += points
+    return total_score[0] * 100 / total_score[1]
 
 
-def calculate_grade(assignments):
+def calculate_weighted_grade(assignments, enrollment_id):
     categories = {}
     for assignment in assignments:
         category = Category.objects.all().get(id=uuid.UUID(assignment.category_id).hex)
         category_name = category.category_name
         category_weight = category.category_weight
         points = assignment.points
-        earned = Submission.objects.all().get(assignment_id=str(assignment.id.hex)).score
+        earned = Submission.objects.all().get(enrollment_id=enrollment_id, assignment_id=str(assignment.id.hex)).score
         if earned is not None:
             sub_score = categories.get(category_name)
             if sub_score is not None:
@@ -196,6 +204,8 @@ def calculate_grade(assignments):
                 sub_score[1] += points
             else:
                 categories.update({category_name: [earned, points, category_weight]})
+    if not categories:
+        return None
     overall_grade_percent = 0
     category_breakdown = {}
     for category_name, values in categories.items():

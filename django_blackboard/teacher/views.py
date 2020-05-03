@@ -8,7 +8,7 @@ from django.contrib.auth import authenticate, login as auth_login, logout as aut
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 
-from .forms import UserLoginForm, CreateAssignmentForm, Scores
+from .forms import UserLoginForm, CreateAssignmentForm, Scores, CreateCategoryForm, EditCategoriesForm
 from .models import Teacher
 from board.models import Class, ClassAssignments, Course, Assignment, Category, ClassCategories
 from student.models import ClassEnrollment, Student, Submission
@@ -170,6 +170,53 @@ def new_assignment(request, class_id):
             'form': form
         }
         return render(request, 'teacher/new_assignment.html', context)
+
+
+def new_category(request, class_id, edit):
+    klass = Class.objects.all().get(id=uuid.UUID(class_id).hex)
+    period = klass.period
+
+    current_category_refs = ClassCategories.objects.all().filter(class_id=str(klass.id.hex))
+    current_categories = []
+    for current_category_ref in current_category_refs:
+        current_category = Category.objects.all().get(id=uuid.UUID(current_category_ref.category_id).hex)
+        current_categories.append(current_category)
+
+    if request.method == 'POST':
+        if 'create_save' in request.POST:
+            create_form = CreateCategoryForm(request.POST)
+            if create_form.is_valid():
+                category_name = create_form.cleaned_data.get('name')
+                category_description = create_form.cleaned_data.get('description')
+                weight = create_form.cleaned_data.get('weight')
+                category = Category.objects.create(category_name=category_name,
+                                                   category_description=category_description,
+                                                   category_weight=weight)
+                category.save()
+                class_category = ClassCategories.objects.create(class_id=class_id, category_id=str(category.id.hex))
+                class_category.save()
+                return redirect('teacher-new-assignment', class_id=class_id)
+        elif 'save_edits' in request.POST:
+            edit_form = EditCategoriesForm(request.POST, categories=current_categories)
+            if edit_form.is_valid():
+                for category_id, weight in edit_form.cleaned_data.items():
+                    category = Category.objects.all().get(id=uuid.UUID(category_id).hex)
+                    category.category_weight = weight
+                    category.save()
+                edit = 'edit=false'
+                return redirect('teacher-new-category', class_id=class_id, edit='edit=false')
+
+    create_form = CreateCategoryForm()
+    edit_form = EditCategoriesForm(categories=current_categories)
+    context = {
+        'class_id': class_id,
+        'edit': edit,
+        'period': period,
+        'current_categories': current_categories,
+        'create_form': create_form,
+        'edit_form': edit_form
+    }
+    return render(request, 'teacher/new_category.html', context)
 
 
 def assignment(request, class_id, assignment_id, edit):

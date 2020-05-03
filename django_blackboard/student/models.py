@@ -1,7 +1,7 @@
 import pickle
 from django.db import models
 from django.contrib.auth.models import User
-from board.models import Schedule, Class
+from board.models import Schedule, Class, Course
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from django.core.files.base import ContentFile
@@ -49,8 +49,40 @@ class ClassEnrollment(models.Model):
 
     def save(self, *args, **kwargs):
         student = Student.objects.all().get(student_id=self.student_id)
+        credentials = pickle.load(open(student.cal_credentials.path, 'rb'))
         klass = Class.objects.all().get(id=uuid.UUID(self.class_id).hex)
-        schedule = Schedule.objects.all().filter(period=klass.period)
+        course = Course.objects.all().get(id=uuid.UUID(klass.course_id).hex)
+        schedules = Schedule.objects.all().filter(period=klass.period)
+        date_times = []
+
+        event = {
+            'summary': course.course_name,
+            'location': '',
+            'description': '',
+            'start': {
+                'dateTime': '2015-05-28T09:00:00-07:00',
+                'timeZone': 'America/Los_Angeles',
+            },
+            'end': {
+                'dateTime': '2015-05-28T17:00:00-07:00',
+                'timeZone': 'America/Los_Angeles',
+            },
+            'recurrence': [
+                'RRULE:FREQ=DAILY;COUNT=2'
+            ],
+            'attendees': [
+                {'email': 'lpage@example.com'},
+                {'email': 'sbrin@example.com'},
+            ],
+            'reminders': {
+                'useDefault': False,
+                'overrides': [
+                    {'method': 'email', 'minutes': 24 * 60},
+                    {'method': 'popup', 'minutes': 10},
+                ],
+            },
+        }
+
         super(ClassEnrollment, self).save(*args, **kwargs)
 
     def __str__(self):

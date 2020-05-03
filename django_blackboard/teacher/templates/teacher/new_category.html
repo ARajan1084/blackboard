@@ -1,0 +1,77 @@
+{% extends 'teacher/base.html' %}
+{% load teacher_extras %}
+{% load static %}
+{% load widget_tweaks %}
+{% load teacher_extras %}
+{% block css %}{% endblock %}
+
+{% block title %}P{{ period }}: Categories{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <div class="row pt-4">
+            <div class="col-lg-7">
+                <h2>New Category</h2>
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="form-group pt-2">
+                        <label for="name">Name: </label>
+                        {{ create_form.name|add_class:'form-control' }}
+                    </div>
+                    <div class="form-group">
+                        <label for="description: ">Description: </label>
+                        {{ create_form.description|add_class:'form-control' }}
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group" style="width: 100px">
+                                <label for="weight">Weight: </label>
+                                {{ create_form.weight|add_class:'form-control' }}
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="" style="color: white"> l </label><br>
+                                <button name="create_save" class="btn btn-primary float-right" type="submit">Save</button>
+                                <button class="btn btn-light float-right" type="button" onclick="location.href='{% url 'teacher-new-assignment' class_id %}'">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="col-lg-5">
+                <h2>Current Categories</h2>
+                <form method="post">
+                {% csrf_token %}
+                    <table class="table table-striped">
+                        <thead>
+                            <th>Category</th>
+                            <th>Weight</th>
+                        </thead>
+                        <tbody>
+                            {% for category in current_categories %}
+                                <tr>
+                                    <td>
+                                        <span title="{{ category.category_description }}">{{ category.category_name }}</span>
+                                    </td>
+                                    {% if edit == 'edit=true' %}
+                                        <td style="width: 120px">{{ edit_form|get_edit_field:category|add_class:'form-control' }}</td>
+                                    {% else %}
+                                        <td style="width: 100px">{{ category.category_weight|percentage }}</td>
+                                    {% endif %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% if edit == 'edit=false' %}
+                        <button class="btn btn-primary float-right" type="button" onclick="location.href='{% url 'teacher-new-category' class_id=class_id edit='edit=true' %}'">Edit</button>
+                    {% else %}
+                        <button name="save_edits" class="btn btn-primary float-right" type='submit'>Save</button>
+                        <button class="btn btn-light float-left" type="button" onclick="location.href='{% url 'teacher-new-category' class_id=class_id edit='edit=false' %}'">Cancel</button>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

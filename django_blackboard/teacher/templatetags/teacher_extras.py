@@ -14,3 +14,13 @@ def uuid_to_str(uuid):
 @register.filter
 def assign_student(input, student):
     input.add_student(student)
+
+
+@register.filter
+def percentage(value):
+    return format(value, '%')
+
+
+@register.filter
+def get_edit_field(form, category):
+    return form[str(category.id.hex)]

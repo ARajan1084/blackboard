@@ -6,12 +6,16 @@ from django.utils import timezone
 
 class Schedule(models.Model):
     period = models.CharField(unique=False, max_length=8)
-    day = models.CharField(unique=False, max_length=10)
+    day = models.IntegerField()
     start_time = models.TimeField()
     end_time = models.TimeField()
 
     def __str__(self):
-        return self.period + '_' + self.day + '_' + str(self.start_time) + '_' + str(self.end_time)
+        return self.period + '_' + str(self.day) + '_' + str(self.start_time) + '_' + str(self.end_time)
+
+    class Meta:
+        db_table = 'schedules'
+        order_with_respect_to = 'day'
 
 
 class Course(models.Model):

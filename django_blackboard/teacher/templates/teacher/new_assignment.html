@@ -23,7 +23,7 @@
             <label for="category">Category</label>
             <div class="input-group">
                 {{ form.category|add_class:'form-control'}}
-                <button class="btn btn-light">New Category...</button>
+                <button class="btn btn-light" onclick="location.href='{% url 'teacher-new-category' class_id=class_id edit='edit=false' %}'">New Category...</button>
             </div>
             <div class="input-group pt-4">
                 <div class="form-group pr-2">

@@ -15,7 +15,7 @@
                         <tr>
                             <th style="width: 40px">P</th>
                             <th>Class</th>
-                            <th style="width: 150px">Grade</th>
+                            <th class = "text-center" style="width: 150px">Grade</th>
                             <th style="width: 200px">Teacher</th>
                         </tr>
                     </thead>
@@ -24,7 +24,11 @@
                         <tr>
                             <td>{{ class.0 }}</td>
                             <td><a href="{% url 'student-class' element='grades' enrollment_id=class.5 %}">{{ class.1 }}</a></td>
-                            <td class="grade">{{ class.3.0 }} ({{ class.3.1 }}%)</td>
+                            {% if class.3 is None %}
+                                <td class="text-center"><small>N/A</small></td>
+                            {% else %}
+                                <td class="text-center">{{ class.3.0 }} ({{ class.3.1|floatformat:2 }}%)</td>
+                            {% endif %}
                             <td>{{ class.2 }}</td>
                         </tr>
                         {% endfor %}

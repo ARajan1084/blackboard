@@ -3,7 +3,7 @@
 {% load static %}
 
 {% block css %}{% endblock %}
-{% block title %}{% endblock %}
+{% block title %}P{{ period }}: Gradesheet{% endblock %}
 
 {% block content %}
     <div class="row pt-4 pr-3 pl-3 clearfix">
@@ -17,7 +17,10 @@
                     <tr>
                         <td class="" style="width: 200px"><button class="btn btn-light">SWAP</button></td>
                         {% for assignment in assignments %}
-                            <td><a href="{% url 'teacher-assignment' class_id=class_id assignment_id=assignment.id|uuid_to_str edit='edit=false' %}">{{ assignment.assignment_name }}</a></td>
+                            <td>
+                                <small></small>
+                                <a href="{% url 'teacher-assignment' class_id=class_id assignment_id=assignment.id|uuid_to_str edit='edit=false' %}">{{ assignment.assignment_name }}</a>
+                            </td>
                         {% endfor %}
                     </tr>
                 </thead>
