@@ -36,6 +36,46 @@ class Student(models.Model):
         result = service.calendarList().list().execute()
         return result
 
+    def add_reminder(self, summary, start_date_time, useDefault, override):
+        credentials = pickle.load(open(self.cal_credentials.path, 'rb'))
+        service = build('calendar', 'v3', credentials=credentials)
+        end_date_time = start_date_time + datetime.timedelta(minutes=15)
+        id = str(uuid.uuid4().hex)
+        event = {
+            'summary': summary,
+            'location': '',
+            'description': '',
+            'start': {
+                'dateTime': date_time_str(start_date_time),
+                'timeZone': 'America/Los_Angeles',
+            },
+            'end': {
+                'dateTime': date_time_str(end_date_time),
+                'timeZone': 'America/Los_Angeles',
+            },
+            'attendees': [
+            ],
+            'colorId': {
+                "kind": "calendar#colors",
+                "updated": date_time_str(timezone.now()),
+                "event": {
+                    'color': {
+                        "background": '1',
+                        "foreground": '1'
+                    }
+                }
+            },
+            'reminders': {
+                'useDefault': useDefault,
+                'overrides': [
+                    override
+                ],
+            },
+            'id': id
+        }
+        service.events().insert(calendarId='primary', body=event).execute()
+        return id
+
     def __str__(self):
         return self.first_name+'_'+self.last_name+'_'+self.student_id
 
@@ -115,9 +155,18 @@ class Submission(models.Model):
     score = models.IntegerField(unique=False, null=True, default=None)
     file = models.FileField(upload_to='media/submission_files', null=True, default=None, unique=False)
     comments = models.CharField(max_length=200, null=True, default=None, unique=False)
+    cal_event_id = models.CharField(max_length=50, null=True, default=None, unique=False)
 
     def __str__(self):
         return self.enrollment_id + '_' + self.assignment_id
+
+    def delete(self, *args, **kwargs):
+        enrollment = ClassEnrollment.objects.all().get(id=uuid.UUID(self.enrollment_id))
+        student = Student.objects.all().get(student_id=enrollment.student_id)
+        credentials = pickle.load(open(student.cal_credentials.path, 'rb'))
+        service = build('calendar', 'v3', credentials=credentials)
+        service.events().delete(calendarId='primary', eventId=self.cal_event_id).execute()
+        super(Submission, self).delete(*args, **kwargs)
 
     class Meta:
         db_table = 'submissions'

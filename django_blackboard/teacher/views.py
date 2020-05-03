@@ -152,12 +152,17 @@ def new_assignment(request, class_id):
                                     assigned=timezone.now())
             enrollments = ClassEnrollment.objects.all().filter(class_id=class_id)
             for enrollment in enrollments:
-                submission = Submission(assignment_id=str(assignment.id).replace('-', ''),
-                                        enrollment_id=str(enrollment.id).replace('-', ''))
+                submission = Submission(assignment_id=str(assignment.id.hex),
+                                        enrollment_id=str(enrollment.id.hex))
+                student = Student.objects.all().get(student_id=enrollment.student_id)
+                if due:
+                    reminder = {'method': 'popup', 'minutes': 10}
+                    submission.cal_event_id = student.add_reminder(summary=name, start_date_time=due,
+                                                                   useDefault=False, override=reminder)
                 submission.save()
             assignment.save()
-            class_assignmnet = ClassAssignments(class_id=class_id, assignment_id=str(assignment.id).replace('-', ''))
-            class_assignmnet.save()
+            class_assignment = ClassAssignments(class_id=class_id, assignment_id=str(assignment.id.hex))
+            class_assignment.save()
             return gradesheet(request, class_id, active='gradesheet')
         else:
             print(form.errors)
