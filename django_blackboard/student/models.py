@@ -1,7 +1,9 @@
+import datetime
 import pickle
 from django.db import models
 from django.contrib.auth.models import User
 from board.models import Schedule, Class, Course
+from django.utils import timezone
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from django.core.files.base import ContentFile
@@ -28,7 +30,7 @@ class Student(models.Model):
             self.cal_credentials.save('token.pkl', file)
         super(Student, self).save(*args, **kwargs)
 
-    def get_events(self):
+    def get_calendars(self):
         credentials = pickle.load(open(self.cal_credentials.path, 'rb'))
         service = build('calendar', 'v3', credentials=credentials)
         result = service.calendarList().list().execute()
@@ -42,6 +44,17 @@ class Student(models.Model):
         order_with_respect_to = 'student_id'
 
 
+def next_weekday(date, weekday):
+    days_ahead = weekday - date.weekday()
+    if days_ahead <= 0:
+        days_ahead += 7
+    return date + datetime.timedelta(days_ahead)
+
+
+def date_time_str(date_time):
+    return str(date_time.date()) + 'T' + str(date_time.time())
+
+
 class ClassEnrollment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
     student_id = models.CharField(max_length=7, unique=False)
@@ -50,39 +63,40 @@ class ClassEnrollment(models.Model):
     def save(self, *args, **kwargs):
         student = Student.objects.all().get(student_id=self.student_id)
         credentials = pickle.load(open(student.cal_credentials.path, 'rb'))
+        service = build('calendar', 'v3', credentials=credentials)
         klass = Class.objects.all().get(id=uuid.UUID(self.class_id).hex)
-        course = Course.objects.all().get(id=uuid.UUID(klass.course_id).hex)
+        course = Course.objects.all().get(course_id=klass.course_id)
         schedules = Schedule.objects.all().filter(period=klass.period)
-        date_times = []
-
-        event = {
-            'summary': course.course_name,
-            'location': '',
-            'description': '',
-            'start': {
-                'dateTime': '2015-05-28T09:00:00-07:00',
-                'timeZone': 'America/Los_Angeles',
-            },
-            'end': {
-                'dateTime': '2015-05-28T17:00:00-07:00',
-                'timeZone': 'America/Los_Angeles',
-            },
-            'recurrence': [
-                'RRULE:FREQ=DAILY;COUNT=2'
-            ],
-            'attendees': [
-                {'email': 'lpage@example.com'},
-                {'email': 'sbrin@example.com'},
-            ],
-            'reminders': {
-                'useDefault': False,
-                'overrides': [
-                    {'method': 'email', 'minutes': 24 * 60},
-                    {'method': 'popup', 'minutes': 10},
+        for schedule in schedules:
+            date = next_weekday(date=timezone.now(), weekday=schedule.day)
+            start_date_time = datetime.datetime.combine(date, schedule.start_time)
+            end_date_time = datetime.datetime.combine(date, schedule.end_time)
+            event = {
+                'summary': course.course_name,
+                'location': '',
+                'description': '',
+                'start': {
+                    'dateTime': date_time_str(start_date_time),
+                    'timeZone': 'America/Los_Angeles',
+                },
+                'end': {
+                    'dateTime': date_time_str(end_date_time),
+                    'timeZone': 'America/Los_Angeles',
+                },
+                'recurrence': [
+                    'RRULE:FREQ=WEEKLY;UNTIL=20200701T170000Z'
                 ],
-            },
-        }
-
+                'attendees': [
+                ],
+                'reminders': {
+                    'useDefault': False,
+                    'overrides': [
+                        {'method': 'popup', 'minutes': 10}
+                    ],
+                },
+            }
+            service.events().insert(calendarId='primary', body=event).execute()
+            print ('Event created: %s' % (event.get('htmlLink')))
         super(ClassEnrollment, self).save(*args, **kwargs)
 
     def __str__(self):

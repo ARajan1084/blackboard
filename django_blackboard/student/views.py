@@ -13,6 +13,10 @@ from board.models import Course, Class, ClassAssignments, Assignment, Category, 
 from teacher.models import Teacher
 
 
+def student_calendar(request):
+    return render(request, 'student/calendar.html')
+
+
 def klass(request, element, enrollment_id):
     if element == 'grades':
         return grades(request, enrollment_id, active=element)
