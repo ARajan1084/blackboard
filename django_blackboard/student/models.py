@@ -23,7 +23,7 @@ class Student(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             scopes = ['https://www.googleapis.com/auth/calendar']
-            flow = InstalledAppFlow.from_client_secrets_file("/Users/achintya/Downloads/client_secret.json",
+            flow = InstalledAppFlow.from_client_secrets_file("client_secret.json",
                                                              scopes=scopes)
             credentials = pickle.dumps(flow.run_console())
             file = ContentFile(credentials)

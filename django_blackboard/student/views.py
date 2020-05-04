@@ -139,6 +139,7 @@ def home(request):
              [],
              str(enrollment.id).replace('-', '')]
         )
+    class_data.sort(key=(lambda a: a[0]))
 
     tests = fetch_upcoming_tests(submissions)
     due_tomorrow = {}
@@ -250,9 +251,9 @@ def login(request):
                         return redirect(next)
                     return redirect('student-board')
                 except:
-                    messages.error(request, 'student not found. wrong portal?')
+                    messages.error(request, 'Student not found. Wrong portal?')
             else:
-                messages.error(request, 'invalid username or password')
+                messages.error(request, 'Invalid username or password')
     else:
         form = UserLoginForm()
     return render(request, 'student/login.html', {'form': form})

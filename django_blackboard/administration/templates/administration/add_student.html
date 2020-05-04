@@ -1,0 +1,61 @@
+{% extends 'administration/base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block css %}{% endblock %}
+{% block title %}Add a Student!{% endblock %}
+
+{% block body %}
+    <div class="container pt-4">
+        <div class="row">
+            <div class="col-7" style="padding-right:20px; border-right: 1px solid #ccc;">
+                <h2>Add a Student</h2>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="username">Username: </label>
+                        {{ create_form.username|add_class:'form-control' }}
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password: </label>
+                        {{ create_form.password|add_class:'form-control' }}
+                    </div>
+                    <div class="form-group">
+                        <label for="first_name">First Name: </label>
+                        {{ create_form.first_name|add_class:'form-control' }}
+                    </div>
+                    <div class="form-group">
+                        <label for="last_name">Last Name: </label>
+                        {{ create_form.last_name|add_class:'form-control' }}
+                    </div>
+                    <div class="form-group">
+                        <label for="email_address">Email Address: </label>
+                        {{ create_form.first_name|add_class:'form-control' }}
+                    </div>
+                    <div class="input-group">
+                        <div class="form-group pr-4">
+                            <label for="student_id">Student ID: </label>
+                            {{ create_form.student_id|add_class:'form-control' }}
+                        </div>
+                        <div class="form-group">
+                            <label for="grade">Grade: </label>
+                            {{ create_form.grade|add_class:'form-control' }}
+                        </div>
+                    </div>
+                    <button class="btn btn-primary float-right" type="submit">Save</button>
+                </form>
+            </div>
+            <div class="col-4">
+                <h2>Upload a CSV</h2>
+                <a href="{% url 'administration-download-file' file_path='id_pictures-default_pfp.png' %}">Download the template here!</a>
+                <form method="post" class="pt-4">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        {{ upload_form.csv }}
+                    </div>
+                    <button class="btn btn-primary float-right" type="submit">Upload</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

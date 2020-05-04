@@ -114,6 +114,7 @@ def resources(request, class_id, active):
     return render(request, 'teacher/resources.html', context)
 
 
+@login_required(login_url='teacher-login')
 def discussions(request, class_id, active):
     klass = Class.objects.all().get(id=uuid.UUID(class_id).hex)
     course_name = Course.objects.all().get(course_id=klass.course_id).course_name
@@ -127,6 +128,7 @@ def discussions(request, class_id, active):
     return render(request, 'teacher/discussions.html', context)
 
 
+@login_required(login_url='teacher-login')
 def new_assignment(request, class_id):
     category_ids = ClassCategories.objects.all().filter(class_id=class_id)
     categories = []
@@ -177,6 +179,7 @@ def new_assignment(request, class_id):
         return render(request, 'teacher/new_assignment.html', context)
 
 
+@login_required(login_url='teacher-login')
 def new_category(request, class_id, edit):
     klass = Class.objects.all().get(id=uuid.UUID(class_id).hex)
     period = klass.period
@@ -224,6 +227,7 @@ def new_category(request, class_id, edit):
     return render(request, 'teacher/new_category.html', context)
 
 
+@login_required(login_url='teacher-login')
 def assignment(request, class_id, assignment_id, edit):
     assignment = Assignment.objects.all().get(id=uuid.UUID(assignment_id).hex)
     class_assignment = ClassAssignments.objects.all().get(class_id=class_id, assignment_id=assignment_id)
