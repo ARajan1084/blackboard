@@ -7,9 +7,23 @@
 
 {% block body %}
     <div class="container pt-4">
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'error' %}
+                    <div class="alert alert-danger">
+                        {{ message }}
+                    </div>
+                {% else %}
+                    <div class="alert alert-success">
+                        {{ message }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
         <div class="row">
             <div class="col-7" style="padding-right:20px; border-right: 1px solid #ccc;">
                 <h2>Add a Student</h2>
+                {{ create_form.errors }}
                 <form method="post">
                     {% csrf_token %}
                     <div class="form-group">
@@ -42,18 +56,21 @@
                             {{ create_form.grade|add_class:'form-control' }}
                         </div>
                     </div>
-                    <button class="btn btn-primary float-right" type="submit">Save</button>
+                    <button class="btn btn-primary float-right" type="submit" name="save">Save</button>
+                    <button class="btn btn-light float-right" type="button" onclick="location.href='{% url 'administration-home' %}'"></button>
                 </form>
             </div>
+
             <div class="col-4">
                 <h2>Upload a CSV</h2>
+                {{ upload_form.errors }}
                 <a href="{% url 'administration-download-file' file_path='id_pictures-default_pfp.png' %}">Download the template here!</a>
-                <form method="post" class="pt-4">
+                <form method="post" class="pt-4" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="form-group">
                         {{ upload_form.csv }}
                     </div>
-                    <button class="btn btn-primary float-right" type="submit">Upload</button>
+                    <button class="btn btn-primary float-right" type="submit" name="upload">Upload</button>
                 </form>
             </div>
         </div>

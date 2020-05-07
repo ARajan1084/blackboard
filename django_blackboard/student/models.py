@@ -18,16 +18,18 @@ class Student(models.Model):
     grade = models.IntegerField(unique=False, default=11)
     id_picture = models.ImageField(upload_to='media/id_pictures')
     email_address = models.CharField(max_length=320, null=True)
-    cal_credentials = models.FileField(upload_to='tokens/5171991', null=True)
+    cal_credentials = models.FileField(upload_to='tokens/', null=True)
 
     def save(self, *args, **kwargs):
-        if not self.pk:
+        if self._state.adding is True:
+            student_id = kwargs.pop('student_id')
+            super(Student, self).save(*args, **kwargs)
             scopes = ['https://www.googleapis.com/auth/calendar']
-            flow = InstalledAppFlow.from_client_secrets_file("client_secret.json",
+            flow = InstalledAppFlow.from_client_secrets_file('/Users/achintya/blackboard/django_blackboard/student/client_secret.json',
                                                              scopes=scopes)
             credentials = pickle.dumps(flow.run_console())
             file = ContentFile(credentials)
-            self.cal_credentials.save('token.pkl', file)
+            self.cal_credentials.save(student_id + '_' + 'token.pkl', file)
         super(Student, self).save(*args, **kwargs)
 
     def get_calendars(self):
