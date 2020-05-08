@@ -3,10 +3,10 @@
 {% load widget_tweaks %}
 
 {% block css %}{% endblock %}
-{% block title %}Add a Student!{% endblock %}
+{% block title %}Add a Teacher!{% endblock %}
 
 {% block add_form_column %}
-    <h2>Add a Student</h2>
+    <h2>Add a Teacher</h2>
     {{ create_form.errors|add_class:'alert alert-danger' }}
     <form method="post">
         {% csrf_token %}
@@ -28,17 +28,7 @@
         </div>
         <div class="form-group">
             <label for="email_address">Email Address: </label>
-            {{ create_form.email_address|add_class:'form-control' }}
-        </div>
-        <div class="input-group">
-            <div class="form-group pr-4">
-                <label for="student_id">Student ID: </label>
-                {{ create_form.student_id|add_class:'form-control' }}
-            </div>
-            <div class="form-group">
-                <label for="grade">Grade: </label>
-                {{ create_form.grade|add_class:'form-control' }}
-            </div>
+            {{ create_form.first_name|add_class:'form-control' }}
         </div>
         <button class="btn btn-primary float-right" type="submit" name="save">Save</button>
         <button class="btn btn-light float-right" type="button" onclick="location.href='{% url 'administration-home' %}'">Cancel</button>
@@ -46,5 +36,5 @@
 {% endblock %}
 
 {% block csv_template %}
-    <a href="{% url 'administration-download-file' file_path='administration-student_template.csv' %}" class="btn btn-outline-primary">Download Template</a>
+    <a href="{% url 'administration-download-file' file_path='administration-teacher_template.csv' %}" class="btn btn-outline-primary">Download Template</a>
 {% endblock %}

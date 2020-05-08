@@ -11,17 +11,17 @@
     <script src="{% static 'board/boot/js/bootstrap.min.js' %}"></script>
 </head>
 <body>
-        <div class="row">
-            <div class="col-3 align-self-center">
+    <div class="container">
+        <div class="row h-100">
+            <div class="col-6 m-auto">
                 <div class="card card-body">
                     <h1>Welcome to Blackboard!</h1>
                     <button class="btn btn-outline-primary" onclick="location.href='{% url "student-board" %}'">Student Board</button>
-                    <br>
-                    <button class="btn btn-outline-secondary" onclick="location.href='{% url "teacher-board" %}'">Teacher Board</button>
-                    <br>
-                    <button class="btn btn-outline-danger">Admin Board</button>
+                    <button class="btn btn-outline-secondary mt-3" onclick="location.href='{% url "teacher-board" %}'">Teacher Board</button>
+                    <button class="btn btn-outline-danger mt-3" onclick="location.href='{% url 'administration-home' %}'">Admin Board</button>
                 </div>
             </div>
         </div>
+    </div>
 </body>
 </html>

@@ -6,6 +6,14 @@ class UserLoginForm(forms.Form):
     password = forms.CharField(widget=forms.PasswordInput)
 
 
+class CreateTeacherForm(forms.Form):
+    username = forms.CharField()
+    password = forms.CharField(widget=forms.PasswordInput)
+    first_name = forms.CharField(max_length=30)
+    last_name = forms.CharField(max_length=30)
+    email_address = forms.EmailField()
+
+
 class CreateStudentForm(forms.Form):
     username = forms.CharField()
     password = forms.CharField(widget=forms.PasswordInput)

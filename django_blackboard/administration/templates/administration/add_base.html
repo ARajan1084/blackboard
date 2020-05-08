@@ -1,0 +1,48 @@
+{% extends 'administration/base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block css %}{% endblock %}
+{% block title %}{% endblock %}
+
+{% block body %}
+    <div class="container pt-4">
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'error' %}
+                    <div class="alert alert-danger">
+                        {{ message }}
+                    </div>
+                {% else %}
+                    <div class="alert alert-success">
+                        {{ message }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+        <div class="row">
+            <div class="col-7" style="padding-right:20px; border-right: 1px solid #ccc;">
+                {% block add_form_column %}
+                {% endblock %}
+            </div>
+            <div class="col-4">
+                <h2>Upload a CSV</h2>
+                {{ upload_form.errors }}
+                <div class="card mt-3">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">CSV Template</h5>
+                        <p class="card-text">In order to insert multiple students into the system using a CSV, the CSV has to formatted correctly. Download the CSV here. Each student should have his/her own row.</p>
+                        <div class="btn-group-vertical mt-auto">
+                            {% block csv_template %}{% endblock %}
+                        </div>
+                    </div>
+                </div>
+                <form method="post" class="pt-4" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ upload_form.csv }}
+                    <button class="btn btn-primary float-right" type="submit" name="upload">Upload</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

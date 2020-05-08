@@ -23,14 +23,19 @@ class Student(models.Model):
     def save(self, *args, **kwargs):
         if self._state.adding is True:
             student_id = kwargs.pop('student_id')
+            auth_calendar = kwargs.pop('auth_calendar')
             super(Student, self).save(*args, **kwargs)
-            scopes = ['https://www.googleapis.com/auth/calendar']
-            flow = InstalledAppFlow.from_client_secrets_file('/Users/achintya/blackboard/django_blackboard/student/client_secret.json',
-                                                             scopes=scopes)
-            credentials = pickle.dumps(flow.run_console())
-            file = ContentFile(credentials)
-            self.cal_credentials.save(student_id + '_' + 'token.pkl', file)
+            if auth_calendar is True:
+                self.auth_google_calendar(self, student_id=student_id)
         super(Student, self).save(*args, **kwargs)
+
+    def auth_google_calendar(self, student_id):
+        scopes = ['https://www.googleapis.com/auth/calendar']
+        flow = InstalledAppFlow.from_client_secrets_file(
+            '/Users/achintya/blackboard/django_blackboard/student/client_secret.json',
+            scopes=scopes)
+        credentials = pickle.dumps(flow.run_console())
+        self.cal_credentials.save(student_id + '_' + 'token.pkl', ContentFile(credentials))
 
     def get_calendars(self):
         credentials = pickle.load(open(self.cal_credentials.path, 'rb'))
