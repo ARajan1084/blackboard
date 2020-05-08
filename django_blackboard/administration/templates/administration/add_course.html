@@ -1,0 +1,33 @@
+{% extends 'administration/add_base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block css %}{% endblock %}
+{% block title %}Add a Course!{% endblock %}
+
+{% block add_form_column %}
+    <h2>Add a Course</h2>
+    {{ create_form.errors|add_class:'alert alert-danger' }}
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="first_name">Course ID: </label><br>
+            <small>{{ course_id_description }}</small>
+            {{ create_form.course_id|add_class:'form-control' }}
+        </div>
+        <div class="form-group">
+            <label for="last_name">Course Name: </label>
+            {{ create_form.course_name|add_class:'form-control' }}
+        </div>
+        <button class="btn btn-primary float-right" type="submit" name="save">Save</button>
+        <button class="btn btn-light float-right" type="button" onclick="location.href='{% url 'administration-home' %}'">Cancel</button>
+    </form>
+{% endblock %}
+
+{% block csv_template_description %}
+    In order to insert multiple courses into the system using a CSV, the CSV has to formatted correctly. Download the CSV here. Each course should have its own row.
+{% endblock %}
+
+{% block csv_template %}
+    <a href="{% url 'administration-download-file' file_path='administration-course_template.csv' %}" class="btn btn-outline-primary">Download Template</a>
+{% endblock %}

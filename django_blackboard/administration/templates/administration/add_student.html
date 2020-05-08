@@ -45,6 +45,10 @@
     </form>
 {% endblock %}
 
+{% block csv_template_description %}
+    In order to insert multiple students into the system using a CSV, the CSV has to formatted correctly. Download the CSV here. Each student should have his/her own row.
+{% endblock %}
+
 {% block csv_template %}
     <a href="{% url 'administration-download-file' file_path='administration-student_template.csv' %}" class="btn btn-outline-primary">Download Template</a>
 {% endblock %}

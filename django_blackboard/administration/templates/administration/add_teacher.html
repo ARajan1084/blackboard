@@ -28,11 +28,15 @@
         </div>
         <div class="form-group">
             <label for="email_address">Email Address: </label>
-            {{ create_form.first_name|add_class:'form-control' }}
+            {{ create_form.email_address|add_class:'form-control' }}
         </div>
         <button class="btn btn-primary float-right" type="submit" name="save">Save</button>
         <button class="btn btn-light float-right" type="button" onclick="location.href='{% url 'administration-home' %}'">Cancel</button>
     </form>
+{% endblock %}
+
+{% block csv_template_description %}
+    In order to insert multiple teachers into the system using a CSV, the CSV has to formatted correctly. Download the CSV here. Each teacher should have his/her own row.
 {% endblock %}
 
 {% block csv_template %}

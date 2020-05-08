@@ -7,19 +7,88 @@ from django.shortcuts import render, redirect, reverse
 from django.contrib import messages
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
-from .forms import UserLoginForm, CreateStudentForm, UploadCSVForm, CreateTeacherForm
+from .forms import UserLoginForm, CreateStudentForm, UploadCSVForm, CreateTeacherForm, CreateCourseForm
 from .models import Administrator
 from student.models import Student
 from teacher.models import Teacher
+from board.models import Course
 from django.contrib.auth.models import User
 from django.contrib.staticfiles import finders
 import mimetypes
 import pandas as pd
 
 
+INTERNAL_ERROR_MESSAGE = 'Something went horribly wrong. Please try again later.'
+
+
 @login_required(login_url='administration-login')
 def home(request):
     return render(request, 'administration/home.html')
+
+
+def add_course(request):
+    if request.method == 'POST':
+        if 'confirm_upload' in request.POST:
+            courses = serializers.deserialize('json', request.session.get('courses'))
+            num_courses_added = 0
+            for course in courses:
+                print(course)
+                try:
+                    course.save()
+                    num_courses_added += 1
+                except IntegrityError:
+                    pass
+                except:
+                    traceback.print_exc()
+                    messages.error(request, INTERNAL_ERROR_MESSAGE)
+                    break
+            messages.success(request, message=(str(num_courses_added) + ' courses added successfully!'))
+        elif 'upload' in request.POST:
+            upload_form = UploadCSVForm(request.POST, request.FILES)
+            if upload_form.is_valid():
+                csv = upload_form.cleaned_data.get('csv')
+                df = pd.read_csv(csv, header=0, dtype=str)
+                try:
+                    courses = []
+                    for index, row in df.iterrows():
+                        course = Course(course_id=row['course_id'],
+                                        course_name=row['course_name'])
+                        courses.append(course)
+                    request.session['courses'] = serializers.serialize('json', courses)
+                    return confirm_course_uploads(request, courses)
+                except:
+                    traceback.print_exc()
+                    messages.error(request, 'Errors exist in the formatting of the uploaded CSV.')
+        elif 'save' in request.POST:
+            create_form = CreateCourseForm(request.POST)
+            if create_form.is_valid():
+                course_id = create_form.cleaned_data.get('course_id')
+                course_name = create_form.cleaned_data.get('course_name')
+                course = Course(course_id=course_id, course_name=course_name)
+                try:
+                    course.save()
+                    messages.success(request, 'Course added successfully.')
+                except IntegrityError:
+                    messages.error(request, 'The course you are trying to add already exists.')
+                except:
+                    traceback.print_exc()
+                    messages.error(request, INTERNAL_ERROR_MESSAGE)
+    create_form = CreateCourseForm()
+    course_id_description = 'Note that every course must have a unique alphanumeric ID'
+    upload_form = UploadCSVForm()
+    context = {
+        'create_form': create_form,
+        'course_id_description': course_id_description,
+        'upload_form': upload_form
+    }
+    return render(request, 'administration/add_course.html', context)
+
+
+def confirm_course_uploads(request, courses):
+    context = {
+        'courses': courses
+    }
+    return render(request, 'administration/confirm_course_uploads.html', context)
 
 
 def add_teacher(request):
@@ -42,10 +111,10 @@ def add_teacher(request):
                     pass
                 except:
                     traceback.print_exc()
-                    messages.error(request, 'Something went horribly wrong. Please try again later.')
+                    messages.error(request, INTERNAL_ERROR_MESSAGE)
                     break
             messages.success(request, message=(str(num_teachers_added) + ' teachers added successfully!'))
-        if 'upload' in request.POST:
+        elif 'upload' in request.POST:
             upload_form = UploadCSVForm(request.POST, request.FILES)
             if upload_form.is_valid():
                 csv = upload_form.cleaned_data.get('csv')
@@ -68,7 +137,34 @@ def add_teacher(request):
                 except:
                     traceback.print_exc()
                     messages.error(request, 'Errors exist in the formatting of the uploaded CSV.')
+        elif 'save' in request.POST:
+            create_form = CreateTeacherForm(request.POST)
+            if create_form.is_valid():
+                username = create_form.cleaned_data.get('username')
+                password = create_form.cleaned_data.get('password')
+                first_name = create_form.cleaned_data.get('first_name')
+                last_name = create_form.cleaned_data.get('last_name')
+                email_address = create_form.cleaned_data.get('email_address')
 
+                user_get_or_create = User.objects.get_or_create(username=username)
+                user = user_get_or_create[0]
+                if user_get_or_create[1]:
+                    user.set_password(password)
+                user.save()
+                teacher = Teacher(user=user,
+                                  first_name=first_name,
+                                  last_name=last_name,
+                                  email_address=email_address)
+                try:
+                    teacher.save()
+                    messages.success(request, 'Teacher successfully added!')
+                except IntegrityError:
+                    messages.error(request, 'The teacher you are trying to add already exists.')
+                except:
+                    traceback.print_exc()
+                    messages.error(request, INTERNAL_ERROR_MESSAGE)
+            else:
+                print(create_form.errors)
     create_form = CreateTeacherForm()
     upload_form = UploadCSVForm()
     context = {
@@ -105,7 +201,7 @@ def add_student(request):
                     pass
                 except:
                     traceback.print_exc()
-                    messages.error(request, 'Something went horribly wrong. Please try again later.')
+                    messages.error(request, INTERNAL_ERROR_MESSAGE)
                     break
             messages.success(request, message=(str(num_students_added) + ' students added successfully!'))
         elif 'upload' in request.POST:
@@ -160,7 +256,7 @@ def add_student(request):
                     messages.error(request, 'The student you are trying to add already exists.')
                 except:
                     traceback.print_exc()
-                    messages.error(request, 'Something went horribly wrong. Please try again later.')
+                    messages.error(request, INTERNAL_ERROR_MESSAGE)
             else:
                 print(create_form.errors)
 

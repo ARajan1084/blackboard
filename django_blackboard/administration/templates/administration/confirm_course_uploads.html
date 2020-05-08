@@ -1,0 +1,35 @@
+{% extends 'administration/base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block css %}{% endblock %}
+{% block title %}Confirm Course Upload{% endblock %}
+
+{% block body %}
+    <div class="container pt-4">
+        <h2>Confirm Upload?</h2>
+        <div class="row pt-2">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Course ID</th>
+                        <th>Course Name</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for course in courses %}
+                        <tr>
+                            <td>{{ course.course_id }}</td>
+                            <td>{{ course.course_name }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <form method="post" style="width: 100%;">
+                {% csrf_token %}
+                <button class="btn btn-primary float-right" name="confirm_upload" type="submit">Confirm</button>
+                <button class="btn btn-light float-right" type="button" onclick="location.href='{% url 'administration-add-student' %}'">Cancel</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}
