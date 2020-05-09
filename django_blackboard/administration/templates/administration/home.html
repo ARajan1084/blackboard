@@ -7,7 +7,7 @@
 {% block body %}
     <div class="container pt-4">
         <div class="row">
-            <div class="col d-flex align-items-stretch">
+            <div class="card-deck">
                 <div class="card">
                     <img class="card-img-top" src="{% static 'administration/student_controls_card_img.png' %}" alt="Card image cap">
                     <div class="card-body d-flex flex-column">
@@ -20,8 +20,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="col d-flex align-items-stretch">
                 <div class="card">
                     <img class="card-img-top" src="{% static 'administration/teacher_controls_card_img.png' %}" alt="Card image cap">
                     <div class="card-body d-flex flex-column">
@@ -34,8 +32,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="col d-flex align-items-stretch">
                 <div class="card">
                     <img class="card-img-top" src="{% static 'administration/course_controls_card_img.jpg' %}" alt="Card image cap">
                     <div class="card-body d-flex flex-column">
@@ -51,7 +47,7 @@
             </div>
         </div>
         <div class="row pt-4">
-            <div class="col d-flex align-items-stretch">
+            <div class="card-deck">
                 <div class="card">
                     <!--<img class="card-img-top" src="" alt="Card image cap">-->
                     <div class="card-body d-flex flex-column">
@@ -59,13 +55,11 @@
                         <p class="card-text">Add or remove classes in the system individually or all at once (with a CSV
                             file). Note that this may require permissions from Google Calendar.</p>
                         <div class="btn-group-vertical mt-auto">
-                            <a href="" class="btn btn-outline-primary">Add Classes</a>
+                            <a href="{% url 'administration-add-class' %}" class="btn btn-outline-primary">Add Classes</a>
                             <a href="" class="btn btn-outline-danger mt-2">Remove Classes</a>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="col d-flex align-items-stretch">
                 <div class="card">
                     <!--<img class="card-img-top" src="" alt="Card image cap">-->
                     <div class="card-body d-flex flex-column">
@@ -73,13 +67,11 @@
                         <p class="card-text">Enroll students in the system individually or all at once (with a CSV
                             file).</p>
                         <div class="btn-group-vertical mt-auto">
-                            <a href="" class="btn btn-outline-primary">Enroll Students</a>
+                            <a href="{% url 'administration-enroll-student' %}" class="btn btn-outline-primary">Enroll Students</a>
                             <a href="" class="btn btn-outline-danger mt-2">Remove Enrollments</a>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="col d-flex align-items-stretch">
                 <div class="card">
                     <!--<img class="card-img-top" src="" alt="Card image cap">-->
                     <div class="card-body d-flex flex-column">

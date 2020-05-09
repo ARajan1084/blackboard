@@ -1,5 +1,7 @@
 import pickle
 import traceback
+
+from django.db.models import ObjectDoesNotExist
 from django.db.utils import IntegrityError
 from django.core import serializers
 from django.http import HttpResponse
@@ -7,15 +9,16 @@ from django.shortcuts import render, redirect, reverse
 from django.contrib import messages
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
-from .forms import UserLoginForm, CreateStudentForm, UploadCSVForm, CreateTeacherForm, CreateCourseForm
+from .forms import UserLoginForm, CreateStudentForm, UploadCSVForm, CreateTeacherForm, CreateCourseForm, CreateClassForm, EnrollStudentForm
 from .models import Administrator
-from student.models import Student
+from student.models import Student, ClassEnrollment
 from teacher.models import Teacher
-from board.models import Course
+from board.models import Course, Schedule, Class
 from django.contrib.auth.models import User
 from django.contrib.staticfiles import finders
 import mimetypes
 import pandas as pd
+import uuid
 
 
 INTERNAL_ERROR_MESSAGE = 'Something went horribly wrong. Please try again later.'
@@ -26,13 +29,87 @@ def home(request):
     return render(request, 'administration/home.html')
 
 
+def enroll_student(request):
+    classes = []
+    for klass in Class.objects.all():
+        course_name = Course.objects.all().get(course_id=klass.course_id).course_name
+        teacher = Teacher.objects.all().get(id=uuid.UUID(klass.teacher_id))
+        teacher_name = teacher.first_name + ' ' + teacher.last_name
+        period = klass.period
+        class_description = teacher_name + ' (P' + str(period) + '): ' + course_name
+        classes.append((str(klass.id.hex), class_description))
+    all_students = Student.objects.all()
+
+    if request.method == 'POST':
+        create_form = EnrollStudentForm(request.POST, classes=classes, students=all_students)
+        if create_form.is_valid():
+            class_id = create_form.cleaned_data.get('klass')
+            enrolled_students = create_form.cleaned_data.get('students')
+            num_students_enrolled = 0
+            for student in enrolled_students:
+                try:
+                    enrollment = ClassEnrollment.objects.get(class_id=class_id, student_id=student.student_id)
+                except ObjectDoesNotExist:
+                    enrollment = ClassEnrollment(class_id=class_id, student_id=student.student_id)
+                    enrollment.save(init_events=False)
+                    num_students_enrolled += 1
+                except:
+                    traceback.print_exc()
+                    messages.error(request, INTERNAL_ERROR_MESSAGE)
+            messages.success(request, str(num_students_enrolled) + ' students enrolled successfully.')
+        else:
+            print(create_form.errors)
+
+    create_form = EnrollStudentForm(classes=classes, students=all_students)
+    context = {
+        'create_form': create_form
+    }
+    return render(request, 'administration/enroll_student.html', context)
+
+
+def add_class(request):
+    courses = []
+    for course in Course.objects.all().order_by('course_name'):
+        courses.append((course.course_id, course.course_name))
+    teachers = []
+    for teacher in Teacher.objects.all().order_by('first_name'):
+        name = teacher.first_name + ' ' + teacher.last_name
+        teachers.append((str(teacher.id.hex), name))
+    periods = []
+    for period in Schedule.objects.order_by().values_list('period').distinct():
+        periods.append((period[0], period[0]))
+
+    if request.method == 'POST':
+        create_form = CreateClassForm(request.POST, courses=courses, teachers=teachers, periods=periods)
+        if create_form.is_valid():
+            course_id = create_form.cleaned_data.get('course')
+            teacher_id = create_form.cleaned_data.get('teacher')
+            period = create_form.cleaned_data.get('period')
+            klass = Class(course_id=course_id, teacher_id=teacher_id, period=period)
+            try:
+                klass.save()
+                messages.success(request, 'Class successfully added.')
+            except IntegrityError:
+                messages.error(request, 'The class you are trying to add already exists.')
+            except:
+                traceback.print_exc()
+                messages.error(request, INTERNAL_ERROR_MESSAGE)
+        else:
+            print(create_form.errors)
+
+    create_form = CreateClassForm(courses=courses, teachers=teachers, periods=periods)
+    context = {
+        'create_form': create_form
+    }
+    return render(request, 'administration/add_class.html', context)
+
+
 def add_course(request):
     if request.method == 'POST':
         if 'confirm_upload' in request.POST:
             courses = serializers.deserialize('json', request.session.get('courses'))
             num_courses_added = 0
             for course in courses:
-                print(course)
                 try:
                     course.save()
                     num_courses_added += 1
@@ -105,8 +182,8 @@ def add_teacher(request):
                 user.save()
                 teacher.user = user
                 try:
-                    teacher.save()
-                    num_teachers_added += 1
+                    teacher_get_or_create = Teacher.objects.get_or_create(user=user, email_address=teacher.email_address)
+                    num_teachers_added += int(teacher_get_or_create[1])
                 except IntegrityError:
                     pass
                 except:
@@ -156,7 +233,9 @@ def add_teacher(request):
                                   last_name=last_name,
                                   email_address=email_address)
                 try:
-                    teacher.save()
+                    teacher_get_or_create = Teacher.objects.get_or_create(user=user, email_address=teacher.email_address)
+                    if not teacher_get_or_create[1]:
+                        raise IntegrityError
                     messages.success(request, 'Teacher successfully added!')
                 except IntegrityError:
                     messages.error(request, 'The teacher you are trying to add already exists.')
@@ -253,7 +332,7 @@ def add_student(request):
                     student.save(student_id=student_id, auth_calendar=False)
                     messages.success(request, 'Student successfully added!')
                 except IntegrityError:
-                    messages.error(request, 'The student you are trying to add already exists.')
+                    messages.error(request, 'The students you are trying to add already exists.')
                 except:
                     traceback.print_exc()
                     messages.error(request, INTERNAL_ERROR_MESSAGE)

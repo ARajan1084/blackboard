@@ -1,0 +1,24 @@
+{% extends 'administration/add_base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block css %}{% endblock %}
+{% block title %}Student Enrollment{% endblock %}
+
+{% block add_form_column %}
+    <h2>Enroll a Student</h2>
+    {{ create_form.errors|add_class:'alert alert-danger' }}
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="course">Class: </label>
+            {{ create_form.klass|add_class:'form-control' }}
+        </div>
+        <div class="form-group">
+            <label for="teacher">Student: </label>
+            {{ create_form.students|add_class:'form-control' }}
+        </div>
+        <button class="btn btn-primary float-right" type="submit" name="save">Save</button>
+        <button class="btn btn-light float-right" type="button" onclick="location.href='{% url 'administration-home' %}'">Cancel</button>
+    </form>
+{% endblock %}

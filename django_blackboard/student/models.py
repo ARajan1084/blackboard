@@ -108,6 +108,12 @@ class ClassEnrollment(models.Model):
     class_id = models.CharField(max_length=100, unique=False)
 
     def save(self, *args, **kwargs):
+        init_events = kwargs.pop('init_events')
+        if init_events:
+            self.init_events()
+        super(ClassEnrollment, self).save(*args, **kwargs)
+
+    def init_events(self):
         student = Student.objects.all().get(student_id=self.student_id)
         credentials = pickle.load(open(student.cal_credentials.path, 'rb'))
         service = build('calendar', 'v3', credentials=credentials)
@@ -143,8 +149,7 @@ class ClassEnrollment(models.Model):
                 },
             }
             service.events().insert(calendarId='primary', body=event).execute()
-            print ('Event created: %s' % (event.get('htmlLink')))
-        super(ClassEnrollment, self).save(*args, **kwargs)
+            print('Event created: %s' % (event.get('htmlLink')))
 
     def __str__(self):
         return self.student_id + '_' + self.class_id
