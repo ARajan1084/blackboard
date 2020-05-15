@@ -7,6 +7,20 @@ import io
 import base64
 
 
+def get_general_stats(scores, points):
+    if not scores:
+        return
+    stats = {
+        'mean': mean(scores),
+        'mean_perc': (mean(scores)*100.0)/points,
+        'median': median(scores),
+        'stdev': stdev(scores),
+        'min': min(scores),
+        'max': max(scores)
+    }
+    return stats
+
+
 def get_score_dist(scores):
     if not scores:
         return
@@ -46,9 +60,11 @@ def get_score_box(scores):
     if not scores:
         return
     fig, ax = plt.subplots()
-    ax.boxplot(scores, vert=False)
+    ax.boxplot(scores, vert=False, widths=0.6)
     ax.height = 200
     ax.set_xlabel('Score')
+    ax.get_yaxis().set_visible(False)
+    fig.set_size_inches(6, 2, forward=True)
     ax.autoscale()
     fig.tight_layout()
     return plt_to_uri(fig)

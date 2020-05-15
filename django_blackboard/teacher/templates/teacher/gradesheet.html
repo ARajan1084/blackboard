@@ -40,7 +40,7 @@
                                 {% for submission in values %}
                                     <td>{{ submission.1.score }} / {{ submission.0.points }}</td>
                                 {% endfor %}
-                                <td>{{ grades|get_item:student|get_element:1 }}% - {{ grades|get_item:student|get_element:0 }}</td>
+                                <td>{{ grades|get_item:student|get_element:1|floatformat:2 }}% - {{ grades|get_item:student|get_element:0 }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>

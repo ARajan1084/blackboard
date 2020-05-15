@@ -176,10 +176,14 @@ class Submission(models.Model):
     def delete(self, *args, **kwargs):
         enrollment = ClassEnrollment.objects.all().get(id=uuid.UUID(self.enrollment_id))
         student = Student.objects.all().get(student_id=enrollment.student_id)
-        credentials = pickle.load(open(student.cal_credentials.path, 'rb'))
-        service = build('calendar', 'v3', credentials=credentials)
-        service.events().delete(calendarId='primary', eventId=self.cal_event_id).execute()
-        super(Submission, self).delete(*args, **kwargs)
+        try:
+            credentials = pickle.load(open(student.cal_credentials.path, 'rb'))
+            service = build('calendar', 'v3', credentials=credentials)
+            service.events().delete(calendarId='primary', eventId=self.cal_event_id).execute()
+        except:
+            pass
+        finally:
+            super(Submission, self).delete(*args, **kwargs)
 
     class Meta:
         db_table = 'submissions'

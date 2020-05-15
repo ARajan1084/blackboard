@@ -56,9 +56,28 @@
                             <h4 class="text-center">Distribution</h4>
                             <img class="card-img" src="data:image/png;base64,{{ curve }}">
                         </div>
-                        <div class="col">
+                        <div class="col mr-2">
                             <h4 class="text-center">Box Plot</h4>
                             <img class="card-img" src="data:image/png;base64,{{ box }}">
+                            <h4 class="text-center pt-3">General Statistics</h4>
+                            <div>
+                                <p class="pt-2">
+                                    <span class="font-weight-bold">Average: </span>
+                                    <span>{{ stats.mean|floatformat:1 }}/{{ assignment.points }} ({{ stats.mean_perc|floatformat:2 }}%)</span>
+                                    <br>
+                                    <span class="font-weight-bold">Median: </span>
+                                    <span>{{ stats.median }}</span>
+                                    <br>
+                                    <span class="font-weight-bold">Standard Dev: </span>
+                                    <span>{{ stats.stdev|floatformat:1 }}</span>
+                                    <br>
+                                    <span class="font-weight-bold">Lowest: </span>
+                                    <span>{{ stats.min }}</span>
+                                    <br>
+                                    <span class="font-weight-bold">Highest: </span>
+                                    <span>{{ stats.max }}</span>
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>

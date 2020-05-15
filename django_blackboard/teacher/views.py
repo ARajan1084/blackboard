@@ -1,22 +1,22 @@
 import uuid
 from collections import OrderedDict
 from datetime import datetime
-from teacher.analysis import get_score_dist, get_score_hist, get_score_box
+from teacher.analysis import get_score_dist, get_score_hist, get_score_box, get_general_stats
 
 from student.views import calculate_grade
 from django.shortcuts import render, redirect, reverse
 from django.contrib import messages
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
-from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 
 from .forms import UserLoginForm, CreateAssignmentForm, Scores, CreateCategoryForm, EditCategoriesForm
 from .models import Teacher
 from board.models import Class, ClassAssignments, Course, Assignment, Category, ClassCategories
 from student.models import ClassEnrollment, Student, Submission
+from .decorators import authentication_required
 
 
-@login_required(login_url='teacher-login')
+@authentication_required
 def home(request):
     teacher = Teacher.objects.all().get(user=request.user)
     classes = Class.objects.all().filter(teacher_id=str(teacher.id.hex))
@@ -36,7 +36,7 @@ def home(request):
     return render(request, 'teacher/home.html', context)
 
 
-@login_required(login_url='teacher-login')
+@authentication_required
 def klass(request, element, class_id):
     if element == 'gradesheet':
         return gradesheet(request, class_id, active=element)
@@ -48,7 +48,7 @@ def klass(request, element, class_id):
         return discussions(request, class_id, active=element)
 
 
-@login_required(login_url='teacher-login')
+@authentication_required
 def gradesheet(request, class_id, active):
     klass = Class.objects.all().get(id=uuid.UUID(class_id).hex)
     course_name = get_course(class_id).course_name
@@ -88,13 +88,14 @@ def gradesheet(request, class_id, active):
     return render(request, 'teacher/gradesheet.html', context)
 
 
+@authentication_required
 def get_student_name(enrollment):
     student = Student.objects.all().get(student_id=enrollment.student_id)
     student_name = student.first_name + ' ' + student.last_name
     return student_name
 
 
-@login_required(login_url='teacher-login')
+@authentication_required
 def dashboard(request, class_id, active):
     klass = Class.objects.all().get(id=uuid.UUID(class_id).hex)
     course_name = Course.objects.all().get(course_id=klass.course_id).course_name
@@ -108,8 +109,7 @@ def dashboard(request, class_id, active):
     return render(request, 'teacher/dashboard.html', context)
 
 
-
-@login_required(login_url='teacher-login')
+@authentication_required
 def resources(request, class_id, active):
     klass = Class.objects.all().get(id=uuid.UUID(class_id).hex)
     course_name = Course.objects.all().get(course_id=klass.course_id).course_name
@@ -123,7 +123,7 @@ def resources(request, class_id, active):
     return render(request, 'teacher/resources.html', context)
 
 
-@login_required(login_url='teacher-login')
+@authentication_required
 def discussions(request, class_id, active):
     klass = Class.objects.all().get(id=uuid.UUID(class_id).hex)
     course_name = Course.objects.all().get(course_id=klass.course_id).course_name
@@ -137,7 +137,7 @@ def discussions(request, class_id, active):
     return render(request, 'teacher/discussions.html', context)
 
 
-@login_required(login_url='teacher-login')
+@authentication_required
 def new_assignment(request, class_id):
     klass = Class.objects.all().get(id=uuid.UUID(class_id))
     category_ids = ClassCategories.objects.all().filter(class_id=class_id)
@@ -192,7 +192,7 @@ def new_assignment(request, class_id):
         return render(request, 'teacher/new_assignment.html', context)
 
 
-@login_required(login_url='teacher-login')
+@authentication_required
 def new_category(request, class_id, edit):
     klass = Class.objects.all().get(id=uuid.UUID(class_id).hex)
     period = klass.period
@@ -252,7 +252,7 @@ def new_category(request, class_id, edit):
     return render(request, 'teacher/new_category.html', context)
 
 
-@login_required(login_url='teacher-login')
+@authentication_required
 def assignment(request, class_id, assignment_id, edit):
     klass = Class.objects.all().get(id=uuid.UUID(class_id))
     assignment = Assignment.objects.all().get(id=uuid.UUID(assignment_id).hex)
@@ -291,6 +291,7 @@ def assignment(request, class_id, assignment_id, edit):
             scores.append(student_score[1])
     curve = get_score_dist(scores)
     box = get_score_box(scores)
+    stats = get_general_stats(scores=scores, points=assignment.points)
     context = {
         'class_id': class_id,
         'active': 'gradesheet',
@@ -301,7 +302,8 @@ def assignment(request, class_id, assignment_id, edit):
         'assignment': assignment,
         'student_scores': student_submissions,
         'curve': curve,
-        'box': box
+        'box': box,
+        'stats': stats
     }
     return render(request, 'teacher/assignment.html', context)
 
