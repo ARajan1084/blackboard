@@ -45,12 +45,11 @@ def grades(request, enrollment_id, active):
             assignments.update({assignment: (category_name, submission)})
         else:
             print(assignment)
-    if klass.weighted:
-        grades = calculate_weighted_grade(assignments.keys(), enrollment_id)
-    else:
-        grades = calculate_grade(assignments.keys(), enrollment_id)
+
+    grades = calculate_grade(assignments.keys(), enrollment_id, klass.weighted)
     context = {
         'active': active,
+        'weighted': klass.weighted,
         'enrollment_id': enrollment_id,
         'period': period,
         'course': course,
@@ -127,10 +126,8 @@ def home(request):
                                                       enrollment_id=str(enrollment.id.hex))
             submissions.update({assignment: submission})
             class_assignments.append(assignment)
-        if klass.weighted:
-            grade = calculate_weighted_grade(class_assignments, str(enrollment.id.hex))
-        else:
-            grade = calculate_grade(class_assignments, str(enrollment.id.hex))
+
+        grade = calculate_grade(class_assignments, str(enrollment.id.hex), klass.weighted)
         class_data.append(
             [klass.period,
              course.course_name,
@@ -182,19 +179,7 @@ def fetch_upcoming_tests(submissions):
     return tests
 
 
-def calculate_grade(assignments, enrollment_id):
-    if not assignments:
-        return None
-    total_score = [0, 0]
-    for assignment in assignments:
-        points = assignment.points
-        earned = Submission.objects.all().get(enrollment_id=enrollment_id, assignment_id=str(assignment.id.hex)).score
-        total_score[0] += earned
-        total_score[1] += points
-    return total_score[0] * 100 / total_score[1]
-
-
-def calculate_weighted_grade(assignments, enrollment_id):
+def calculate_grade(assignments, enrollment_id, weighted):
     categories = {}
     for assignment in assignments:
         category = Category.objects.all().get(id=uuid.UUID(assignment.category_id).hex)
@@ -209,15 +194,33 @@ def calculate_weighted_grade(assignments, enrollment_id):
                 sub_score[1] += points
             else:
                 categories.update({category_name: [earned, points, category_weight]})
-    if not categories:
-        return None
-    overall_grade_percent = 0
+
     category_breakdown = {}
     for category_name, values in categories.items():
-        category_breakdown.update({category_name: values[0] * 100/values[1]})
-    for category_score in categories.values():
-        overall_grade_percent += decimal.Decimal(category_score[0] * 100 / category_score[1]) * category_score[2]
-    return letter_grade(overall_grade_percent), overall_grade_percent, category_breakdown
+        category_breakdown.update({category_name: (values[0] * 100/values[1], values[2])})
+
+    if weighted:
+        if not categories:
+            return None
+        overall_grade_percent = 0
+        overall_grade_denominator = 0
+        for category_score in categories.values():
+            overall_grade_percent += decimal.Decimal(category_score[0] * 100 / category_score[1]) * category_score[2]
+            overall_grade_denominator += category_score[2]
+        overall_grade_percent = overall_grade_percent / overall_grade_denominator
+        return letter_grade(overall_grade_percent/100), overall_grade_percent, category_breakdown
+    else:
+        if not assignments:
+            return None
+        total_score = [0, 0]
+        for assignment in assignments:
+            points = assignment.points
+            earned = Submission.objects.all().get(enrollment_id=enrollment_id,
+                                                  assignment_id=str(assignment.id.hex)).score
+            total_score[0] += earned
+            total_score[1] += points
+        overall_grade_percentage = decimal.Decimal(total_score[0] * 100 / total_score[1])
+        return letter_grade(overall_grade_percentage/100), overall_grade_percentage, category_breakdown
 
 
 def letter_grade(percent):

@@ -10,32 +10,38 @@
         <h1>Period {{ period }}: {{ course_name }}</h1>
         <ul class="nav nav-tabs">
             <li class="nav-item">
+                <a
                 {% if active == 'gradesheet' %}
-                    <a class="nav-link active" href="">Gradesheet</a>
+                    class="nav-link active"
                 {% else %}
-                    <a class="nav-link" href="{% url 'teacher-class' element='gradesheet' class_id=class_id %}">Gradesheet</a>
+                    class="nav-link"
                 {% endif %}
+                href="{% url 'teacher-class' element='gradesheet' class_id=class_id %}">
+                    Gradesheet</a>
             </li>
             <li class="nav-item">
+                <a
                 {% if active == 'dashboard' %}
-                    <a class="nav-link active" href="">Dashboard</a>
+                    class="nav-link active"
                 {% else %}
-                    <a class="nav-link" href="{% url 'teacher-class' element='dashboard' class_id=class_id %}">Dashboard</a>
-                {% endif %}
+                    class="nav-link"
+                {% endif %} href="{% url 'teacher-class' element='dashboard' class_id=class_id %}">Dashboard</a>
             </li>
             <li class="nav-item">
+                <a
                 {% if active == 'resources' %}
-                    <a class="nav-link active" href="">Resources</a>
+                    class="nav-link active"
                 {% else %}
-                    <a class="nav-link" href="{% url 'teacher-class' element='resources' class_id=class_id %}">Resources</a>
-                {% endif %}
+                    class="nav-link"
+                {% endif %} href="{% url 'teacher-class' element='resources' class_id=class_id %}">Resources</a>
             </li>
             <li class="nav-item">
+                <a
                 {% if active == 'discussions' %}
-                    <a class="nav-link active" href="">Discussions</a>
+                    class="nav-link active"
                 {% else %}
-                    <a class="nav-link" href="{% url 'teacher-class' element='discussions' class_id=class_id %}">Discussions</a>
-                {% endif %}
+                    class="nav-link"
+                {% endif %} href="{% url 'teacher-class' element='discussions' class_id=class_id %}">Discussions</a>
             </li>
         </ul>
         {% block content %}{% endblock %}

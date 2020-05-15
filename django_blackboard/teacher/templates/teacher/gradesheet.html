@@ -2,39 +2,52 @@
 {% load teacher_extras %}
 {% load static %}
 
-{% block css %}{% endblock %}
+{% block css %}
+    <link rel="stylesheet" href="{% static 'teacher/gradesheet.css' %}">{% endblock %}
 {% block title %}P{{ period }}: Gradesheet{% endblock %}
 
 {% block content %}
-    <div class="row pt-4 pr-3 pl-3 clearfix">
-        <button class="btn btn-light" onclick="window.location.href = '{% url 'teacher-new-assignment' class_id%}'">New Assignment!</button>
-        <button class="btn btn-primary ml-auto">Edit</button>
-    </div>
-    <div class="row pt-3">
-        <div class="col-lg">
-            <table class="table table-sm table-bordered table-striped">
-                <thead>
-                    <tr>
-                        <td class="" style="width: 200px"><button class="btn btn-light">SWAP</button></td>
-                        {% for assignment in assignments %}
-                            <td>
-                                <small></small>
-                                <a href="{% url 'teacher-assignment' class_id=class_id assignment_id=assignment.id|uuid_to_str edit='edit=false' %}">{{ assignment.assignment_name }}</a>
-                            </td>
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for student_name, values in data.items %}
+    <div class="container">
+        <div class="row pt-4 pr-3 pl-3 clearfix">
+            <button class="btn btn-outline-primary mr-2"
+                    onclick="window.location.href = '{% url 'teacher-new-assignment' class_id%}'"
+                    title="New Assignment">
+                <i class="fa fa-file"></i></button>
+            <button class="btn btn-outline-secondary"
+                    onclick="window.location.href='{% url 'teacher-new-category' class_id=class_id edit='edit=false' %}'">Edit Categories</button>
+            <button class="btn btn-outline-primary ml-auto" title="Edit Gradesheet">
+                <i class="fa fa-pencil-alt"></i></button>
+        </div>
+        <div class="row pt-3">
+            <div class="col">
+                <table class="table table-sm table-bordered table-striped" data-toggle="table">
+                    <thead>
                         <tr>
-                            <td>{{ student_name }}</td>
-                            {% for submission in values %}
-                                <td>{{ submission.1.score }} / {{ submission.0.points }}</td>
+                            <th data-sortable="True" class="">Student</th>
+                            {% for assignment in assignments %}
+                                <th class="" data-sortable="True">
+                                    <small class="text-muted">{{ assignment.1.category_name }}</small><br>
+                                    <a href="{% url 'teacher-assignment' class_id=class_id assignment_id=assignment.0.id|uuid_to_str edit='edit=false' %}">{{ assignment.0.assignment_name }}</a>
+                                </th>
                             {% endfor %}
+                            <th data-sortable="True">Grade</th>
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% for student, values in data.items %}
+                            <tr>
+                                <td>{{ student|name }}</td>
+                                {% for submission in values %}
+                                    <td>{{ submission.1.score }} / {{ submission.0.points }}</td>
+                                {% endfor %}
+                                <td>{{ grades|get_item:student|get_element:1 }}% - {{ grades|get_item:student|get_element:0 }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
+{% endblock %}
+{% block scripts %}
 {% endblock %}

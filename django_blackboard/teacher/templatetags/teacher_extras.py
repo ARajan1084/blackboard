@@ -24,3 +24,19 @@ def percentage(value):
 @register.filter
 def get_edit_field(form, category):
     return form[str(category.id.hex)]
+
+
+@register.filter
+def name(person):
+    return person.first_name + ' ' + person.last_name
+
+
+@register.filter
+def get_item(dict, key):
+    return dict.get(key)
+
+
+@register.filter
+def get_element(list, index):
+    if list:
+        return list[index]

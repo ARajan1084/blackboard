@@ -44,44 +44,45 @@ class Student(models.Model):
         return result
 
     def add_reminder(self, summary, start_date_time, useDefault, override):
-        credentials = pickle.load(open(self.cal_credentials.path, 'rb'))
-        service = build('calendar', 'v3', credentials=credentials)
-        end_date_time = start_date_time + datetime.timedelta(minutes=15)
-        id = str(uuid.uuid4().hex)
-        event = {
-            'summary': summary,
-            'location': '',
-            'description': '',
-            'start': {
-                'dateTime': date_time_str(start_date_time),
-                'timeZone': 'America/Los_Angeles',
-            },
-            'end': {
-                'dateTime': date_time_str(end_date_time),
-                'timeZone': 'America/Los_Angeles',
-            },
-            'attendees': [
-            ],
-            'colorId': {
-                "kind": "calendar#colors",
-                "updated": date_time_str(timezone.now()),
-                "event": {
-                    'color': {
-                        "background": '1',
-                        "foreground": '1'
-                    }
-                }
-            },
-            'reminders': {
-                'useDefault': useDefault,
-                'overrides': [
-                    override
+        if self.cal_credentials:
+            credentials = pickle.load(open(self.cal_credentials.path, 'rb'))
+            service = build('calendar', 'v3', credentials=credentials)
+            end_date_time = start_date_time + datetime.timedelta(minutes=15)
+            id = str(uuid.uuid4().hex)
+            event = {
+                'summary': summary,
+                'location': '',
+                'description': '',
+                'start': {
+                    'dateTime': date_time_str(start_date_time),
+                    'timeZone': 'America/Los_Angeles',
+                },
+                'end': {
+                    'dateTime': date_time_str(end_date_time),
+                    'timeZone': 'America/Los_Angeles',
+                },
+                'attendees': [
                 ],
-            },
-            'id': id
-        }
-        service.events().insert(calendarId='primary', body=event).execute()
-        return id
+                'colorId': {
+                    "kind": "calendar#colors",
+                    "updated": date_time_str(timezone.now()),
+                    "event": {
+                        'color': {
+                            "background": '1',
+                            "foreground": '1'
+                        }
+                    }
+                },
+                'reminders': {
+                    'useDefault': useDefault,
+                    'overrides': [
+                        override
+                    ],
+                },
+                'id': id
+            }
+            service.events().insert(calendarId='primary', body=event).execute()
+            return id
 
     def __str__(self):
         return self.first_name+'_'+self.last_name+'_'+self.student_id

@@ -3,6 +3,8 @@
 <html lang="en">
 <head>
     <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'board/fontawesome-free-5.13.0-web/css/all.css' %}">
+    <link rel="stylesheet" href="{% static 'board/bootstrap-table-master/dist/bootstrap-table.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'board/boot/css/bootstrap.css' %}">
     {% block css %}{% endblock %}
 </head>
@@ -35,5 +37,11 @@
     </nav>
 {% block body %}
 {% endblock %}
+    <script src="{% static 'board/jquery-3.5.1.min.js' %}"></script>
+    <script src="{% static 'board/boot/js/bootstrap.js' %}"></script>
+    <script src="{% static 'board/bootstrap-table-master/dist/bootstrap-table.js' %}"></script>
+    <script src="{% static 'board/fontawesome-free-5.13.0-web/js/fontawesome.js' %}"></script>
+    {% block scripts %}
+    {% endblock %}
 </body>
 </html>

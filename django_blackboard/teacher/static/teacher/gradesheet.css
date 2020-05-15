@@ -1,35 +1,22 @@
-.main {
-    width: 70%;
-    margin: auto;
+.verticalTableHeader {
+    text-align:center;
+    white-space:nowrap;
+    g-origin:50% 50%;
+    -webkit-transform: rotate(90deg);
+    -moz-transform: rotate(90deg);
+    -ms-transform: rotate(90deg);
+    -o-transform: rotate(90deg);
+    transform: rotate(90deg);
+
 }
-
-table {
-    width: 90%;
-    border-collapse: collapse;
+.verticalTableHeader p {
+    margin:0 -100% ;
+    display:inline-block;
 }
-
-table, th, td{
-    line-height: 2em;
-    margin: 10px auto auto;
-    border: 1px solid lightgray;
-}
-
-td {
-    padding-left: 10px;
-    padding-right: 10px;
-}
-
-
-
-.names {
-    width: 150px;
-}
-
-.control_panel {
-    width: 90%;
-    margin: 10px auto auto;
-}
-
-.edit_button {
-    float:right;
+.verticalTableHeader p:before{
+    content:'';
+    width:0;
+    padding-top:110%;/* takes width as reference, + 10% for faking some extra padding */
+    display:inline-block;
+    vertical-align:middle;
 }

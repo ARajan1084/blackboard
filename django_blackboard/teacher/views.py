@@ -1,7 +1,9 @@
 import uuid
 from collections import OrderedDict
 from datetime import datetime
+from teacher.analysis import get_score_dist, get_score_hist, get_score_box
 
+from student.views import calculate_grade
 from django.shortcuts import render, redirect, reverse
 from django.contrib import messages
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
@@ -20,7 +22,7 @@ def home(request):
     classes = Class.objects.all().filter(teacher_id=str(teacher.id.hex))
     class_data = []
     for klass in classes:
-        course = Course.objects.all().get(course_id=klass.course_id)
+        course = get_course(str(klass.id.hex))
         num_students = ClassEnrollment.objects.all().filter(class_id=str(klass.id.hex)).count()
         class_data.append(
             [klass.period,
@@ -49,32 +51,39 @@ def klass(request, element, class_id):
 @login_required(login_url='teacher-login')
 def gradesheet(request, class_id, active):
     klass = Class.objects.all().get(id=uuid.UUID(class_id).hex)
-    course_name = Course.objects.all().get(course_id=klass.course_id).course_name
+    course_name = get_course(class_id).course_name
     period = klass.period
     enrollments = ClassEnrollment.objects.all().filter(class_id=class_id)
     assignment_ids = ClassAssignments.objects.all().filter(class_id=class_id)
     assignments = []
     for assignment_id in assignment_ids:
-        assignments.append(Assignment.objects.all().get(id=uuid.UUID(assignment_id.assignment_id).hex))
+        assignment = Assignment.objects.all().get(id=uuid.UUID(assignment_id.assignment_id).hex)
+        category = Category.objects.all().get(id=uuid.UUID(assignment.category_id))
+        assignments.append((assignment, category))
     data = OrderedDict({})
+    grades = {}
     for enrollment in enrollments:
-        student_name = get_student_name(enrollment)
-        for assignment in assignments:
+        student = Student.objects.all().get(student_id=enrollment.student_id)
+        grades.update({student: calculate_grade(assignments=[assignment[0] for assignment in assignments],
+                                 enrollment_id=str(enrollment.id.hex),
+                                 weighted=klass.weighted)})
+        for assignment, category in assignments:
             submission = Submission.objects.get(enrollment_id=str(enrollment.id.hex),
                                                 assignment_id=str(assignment.id.hex))
             try:
-                current = data[student_name]
+                current = data[student]
                 score = (assignment, submission)
-                data[student_name] = current + (score,)
+                data[student] = current + (score,)
             except:
-                data.update({student_name: ((assignment, submission),)})
+                data.update({student: ((assignment, submission),)})
     context = {
         'active': active,
         'class_id': class_id,
         'course_name': course_name,
         'period': period,
         'assignments': assignments,
-        'data': data
+        'data': data,
+        'grades': grades
     }
     return render(request, 'teacher/gradesheet.html', context)
 
@@ -89,7 +98,7 @@ def get_student_name(enrollment):
 def dashboard(request, class_id, active):
     klass = Class.objects.all().get(id=uuid.UUID(class_id).hex)
     course_name = Course.objects.all().get(course_id=klass.course_id).course_name
-    period = klass.period;
+    period = klass.period
     context = {
         'active': active,
         'class_id': class_id,
@@ -130,6 +139,7 @@ def discussions(request, class_id, active):
 
 @login_required(login_url='teacher-login')
 def new_assignment(request, class_id):
+    klass = Class.objects.all().get(id=uuid.UUID(class_id))
     category_ids = ClassCategories.objects.all().filter(class_id=class_id)
     categories = []
     for category_id in category_ids:
@@ -172,6 +182,9 @@ def new_assignment(request, class_id):
     else:
         form = CreateAssignmentForm(categories=categories)
         context = {
+            'active': 'gradesheet',
+            'period': klass.period,
+            'course_name': get_course(class_id).course_name,
             'class_id': class_id,
             'categories': categories,
             'form': form
@@ -201,23 +214,35 @@ def new_category(request, class_id, edit):
                                                    category_description=category_description,
                                                    category_weight=weight)
                 category.save()
+                if weight:
+                    klass.weighted = True
+                    klass.save()
                 class_category = ClassCategories.objects.create(class_id=class_id, category_id=str(category.id.hex))
                 class_category.save()
-                return redirect('teacher-new-assignment', class_id=class_id)
+                return redirect('teacher-new-category', class_id=class_id, edit='edit=false')
         elif 'save_edits' in request.POST:
             edit_form = EditCategoriesForm(request.POST, categories=current_categories)
+            weighted = False
             if edit_form.is_valid():
                 for category_id, weight in edit_form.cleaned_data.items():
                     category = Category.objects.all().get(id=uuid.UUID(category_id).hex)
                     category.category_weight = weight
                     category.save()
-                edit = 'edit=false'
+                    if weight:
+                        weighted = True
+                        klass.weighted = True
+                        klass.save()
+                if weighted:
+                    klass.weighted = False
+                    klass.save()
                 return redirect('teacher-new-category', class_id=class_id, edit='edit=false')
 
     create_form = CreateCategoryForm()
     edit_form = EditCategoriesForm(categories=current_categories)
     context = {
+        'active': 'gradesheet',
         'class_id': class_id,
+        'course_name': get_course(class_id).course_name,
         'edit': edit,
         'period': period,
         'current_categories': current_categories,
@@ -229,10 +254,10 @@ def new_category(request, class_id, edit):
 
 @login_required(login_url='teacher-login')
 def assignment(request, class_id, assignment_id, edit):
+    klass = Class.objects.all().get(id=uuid.UUID(class_id))
     assignment = Assignment.objects.all().get(id=uuid.UUID(assignment_id).hex)
     class_assignment = ClassAssignments.objects.all().get(class_id=class_id, assignment_id=assignment_id)
-    student_scores = get_students(assignment_id)
-
+    student_scores = get_student_scores(assignment_id)
     if request.method == 'POST':
         form = Scores(request.POST, student_scores=student_scores)
         if form.is_valid():
@@ -250,24 +275,40 @@ def assignment(request, class_id, assignment_id, edit):
                 assignment.delete()
                 class_assignment.delete()
                 return redirect('teacher-class', element='gradesheet', class_id=class_id)
-
             edit = 'edit=false'
-
+            return redirect('teacher-assignment', class_id=class_id, assignment_id=assignment_id, edit=edit)
     form = Scores(student_scores=student_scores)
     submissions = get_submissions(class_id, assignment_id)
-    student_scores = {}
+    student_submissions = {}
     for submission in submissions:
         class_enrollment = ClassEnrollment.objects.all().get(id=uuid.UUID(submission.enrollment_id).hex)
         student = Student.objects.all().get(student_id=class_enrollment.student_id)
-        student_scores.update({student: submission})
+        student_submissions.update({student: submission})
+
+    scores = []
+    for student_score in student_scores:
+        if student_score[1]:
+            scores.append(student_score[1])
+    curve = get_score_dist(scores)
+    box = get_score_box(scores)
     context = {
         'class_id': class_id,
+        'active': 'gradesheet',
+        'course_name': get_course(class_id).course_name,
+        'period': klass.period,
         'edit': edit,
         'form': form,
         'assignment': assignment,
-        'student_scores': student_scores
+        'student_scores': student_submissions,
+        'curve': curve,
+        'box': box
     }
     return render(request, 'teacher/assignment.html', context)
+
+
+def get_course(class_id):
+    course_id = Class.objects.all().get(id=uuid.UUID(class_id)).course_id
+    return Course.objects.all().get(course_id=course_id)
 
 
 def get_submissions(class_id, assignment_id):
@@ -280,7 +321,7 @@ def get_submissions(class_id, assignment_id):
     return submissions
 
 
-def get_students(assignment_id):
+def get_student_scores(assignment_id):
     class_assignment = ClassAssignments.objects.all().get(assignment_id=assignment_id)
     klass = Class.objects.all().get(id=uuid.UUID(class_assignment.class_id).hex)
     class_enrollments = ClassEnrollment.objects.all().filter(class_id=str(klass.id).replace('-', ''))
