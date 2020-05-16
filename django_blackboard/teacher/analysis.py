@@ -64,6 +64,9 @@ def get_score_box(scores):
     ax.height = 200
     ax.set_xlabel('Score')
     ax.get_yaxis().set_visible(False)
+    ax.spines['top'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+    ax.spines['right'].set_visible(False)
     fig.set_size_inches(6, 2, forward=True)
     ax.autoscale()
     fig.tight_layout()

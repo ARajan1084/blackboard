@@ -65,6 +65,7 @@ class Assignment(models.Model):
     updated = models.DateTimeField(null=True)
     assigned = models.DateTimeField(null=True)
     due_date = models.DateTimeField(null=True)
+    est_completion_time_min = models.IntegerField(null=True, default=None)
 
     def assign(self, due_date):
         if self.assigned is None:

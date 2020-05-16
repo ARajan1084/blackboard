@@ -43,6 +43,7 @@ class CreateAssignmentForm(forms.Form):
     points = forms.IntegerField()
     due_date = forms.DateTimeField(widget=DateInput, required=False)
     due_time = forms.TimeField(widget=TimeInput, required=False)
+    est_completion_time_min = forms.IntegerField(required=False)
 
     def __init__(self, *args, **kwargs):
         self.categories = kwargs.pop('categories')

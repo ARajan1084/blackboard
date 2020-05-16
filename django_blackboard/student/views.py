@@ -11,6 +11,8 @@ from django.contrib.auth.decorators import login_required
 from .models import Student, ClassEnrollment, Submission
 from board.models import Course, Class, ClassAssignments, Assignment, Category, ClassCategories, Schedule
 from teacher.models import Teacher
+from .utils import calculate_grade, get_student_submissions, get_enrollments, get_class_data, \
+    fetch_upcoming, calculate_workload, get_assignments
 
 
 def student_calendar(request):
@@ -62,14 +64,29 @@ def grades(request, enrollment_id, active):
 @login_required()
 def dashboard(request, enrollment_id, active):
     enrollment = ClassEnrollment.objects.all().get(id=uuid.UUID(enrollment_id).hex)
+    assignments = get_assignments(enrollment)
     klass = Class.objects.all().get(id=uuid.UUID(enrollment.class_id).hex)
     course = Course.objects.all().get(course_id=klass.course_id)
     period = klass.period
+    submissions = get_student_submissions((enrollment,))
+
+    upcoming = fetch_upcoming(submissions)
+    tests = upcoming.get('tests')
+    due_tomorrow = upcoming.get('due_tomorrow')
+    due_in_three_days = upcoming.get('due_in_three_days')
+    due_in_a_week = upcoming.get('due_in_a_week')
+    est_completion_time = calculate_workload((enrollment,))
+
     context = {
         'period': period,
         'course': course,
         'enrollment_id': enrollment_id,
-        'active': active
+        'active': active,
+        'due_tomorrow': due_tomorrow,
+        'due_in_three_days': due_in_three_days,
+        'due_in_a_week': due_in_a_week,
+        'tests': tests,
+        'est_completion_time': est_completion_time
     }
     return render(request, 'student/dashboard.html', context)
 
@@ -107,133 +124,27 @@ def discussions(request, enrollment_id, active):
 @login_required()
 def home(request):
     student = Student.objects.all().get(user=request.user)
-    classes = ClassEnrollment.objects.all().filter(student_id=student.student_id)
+    enrollments = get_enrollments(student)
 
-    day_of_week = timezone.now().date().weekday()
-    schedule = Schedule.objects.all().filter(day=day_of_week)
+    submissions = get_student_submissions(enrollments)
+    class_data = get_class_data(enrollments)
 
-    submissions = {}
-    class_data = []
-    for enrollment in classes:
-        klass = Class.objects.all().get(id=enrollment.class_id)
-        course = Course.objects.all().get(course_id=klass.course_id)
-        teacher = Teacher.objects.all().get(id=klass.teacher_id)
-        assignment_refs = ClassAssignments.objects.all().filter(class_id=enrollment.class_id)
-        class_assignments = []
-        for assignment_ref in assignment_refs:
-            assignment = Assignment.objects.all().get(id=uuid.UUID(assignment_ref.assignment_id).hex)
-            submission = Submission.objects.all().get(assignment_id=str(assignment.id.hex),
-                                                      enrollment_id=str(enrollment.id.hex))
-            submissions.update({assignment: submission})
-            class_assignments.append(assignment)
-
-        grade = calculate_grade(class_assignments, str(enrollment.id.hex), klass.weighted)
-        class_data.append(
-            [klass.period,
-             course.course_name,
-             teacher.first_name + ' ' + teacher.last_name,
-             grade,
-             [],
-             str(enrollment.id).replace('-', '')]
-        )
-    class_data.sort(key=(lambda a: a[0]))
-
-    tests = fetch_upcoming_tests(submissions)
-    due_tomorrow = {}
-    due_in_three_days = {}
-    due_in_a_week = {}
-
-    for assignment, submission in list(submissions.items()):
-        due_date = assignment.due_date
-        current_date = timezone.now()
-        if due_date > current_date and submission.score is None:
-            delta = due_date - current_date
-            if delta.days <= 1:
-                due_tomorrow.update({assignment: submissions.pop(assignment)})
-            elif delta.days <= 3:
-                due_in_three_days.update({assignment: submissions.pop(assignment)})
-            elif delta.days <= 8:
-                due_in_a_week.update({assignment: submissions.pop(assignment)})
+    upcoming = fetch_upcoming(submissions)
+    tests = upcoming.get('tests')
+    due_tomorrow = upcoming.get('due_tomorrow')
+    due_in_three_days = upcoming.get('due_in_three_days')
+    due_in_a_week = upcoming.get('due_in_a_week')
+    est_completion_time = calculate_workload(enrollments)
 
     context = {
         'class_data': class_data,
         'due_tomorrow': due_tomorrow,
         'due_in_three_days': due_in_three_days,
         'due_in_a_week': due_in_a_week,
-        'tests': tests
+        'tests': tests,
+        'est_completion_time': est_completion_time
     }
     return render(request, 'student/home.html', context)
-
-
-def fetch_upcoming_tests(submissions):
-    tests = {}
-    for assignment, submission in list(submissions.items()):
-        if assignment.due_date > timezone.now():
-            category = Category.objects.all().get(id=uuid.UUID(assignment.category_id).hex)
-            if (category.category_name == 'Tests'
-                    or category.category_name == 'Tests/Quizzes'
-                    or category.category_name == 'Quizzes'):
-                tests.update({assignment: submissions.pop(assignment)})
-        else:
-            submissions.pop(assignment)
-    return tests
-
-
-def calculate_grade(assignments, enrollment_id, weighted):
-    categories = {}
-    for assignment in assignments:
-        category = Category.objects.all().get(id=uuid.UUID(assignment.category_id).hex)
-        category_name = category.category_name
-        category_weight = category.category_weight
-        points = assignment.points
-        earned = Submission.objects.all().get(enrollment_id=enrollment_id, assignment_id=str(assignment.id.hex)).score
-        if earned is not None:
-            sub_score = categories.get(category_name)
-            if sub_score is not None:
-                sub_score[0] += earned
-                sub_score[1] += points
-            else:
-                categories.update({category_name: [earned, points, category_weight]})
-
-    category_breakdown = {}
-    for category_name, values in categories.items():
-        category_breakdown.update({category_name: (values[0] * 100/values[1], values[2])})
-
-    if weighted:
-        if not categories:
-            return None
-        overall_grade_percent = 0
-        overall_grade_denominator = 0
-        for category_score in categories.values():
-            overall_grade_percent += decimal.Decimal(category_score[0] * 100 / category_score[1]) * category_score[2]
-            overall_grade_denominator += category_score[2]
-        overall_grade_percent = overall_grade_percent / overall_grade_denominator
-        return letter_grade(overall_grade_percent/100), overall_grade_percent, category_breakdown
-    else:
-        if not assignments:
-            return None
-        total_score = [0, 0]
-        for assignment in assignments:
-            points = assignment.points
-            earned = Submission.objects.all().get(enrollment_id=enrollment_id,
-                                                  assignment_id=str(assignment.id.hex)).score
-            total_score[0] += earned
-            total_score[1] += points
-        overall_grade_percentage = decimal.Decimal(total_score[0] * 100 / total_score[1])
-        return letter_grade(overall_grade_percentage/100), overall_grade_percentage, category_breakdown
-
-
-def letter_grade(percent):
-    if percent >= 0.9:
-        return 'A'
-    elif percent >= 0.8:
-        return 'B'
-    elif percent >= 0.7:
-        return 'C'
-    elif percent >= 0.6:
-        return 'D'
-    else:
-        return 'F'
 
 
 def login(request):

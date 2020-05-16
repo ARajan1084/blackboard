@@ -169,6 +169,7 @@ class Submission(models.Model):
     file = models.FileField(upload_to='media/submission_files', null=True, default=None, unique=False)
     comments = models.CharField(max_length=200, null=True, default=None, unique=False)
     cal_event_id = models.CharField(max_length=50, null=True, default=None, unique=False)
+    complete = models.BooleanField(null=True, default=False)
 
     def __str__(self):
         return self.enrollment_id + '_' + self.assignment_id

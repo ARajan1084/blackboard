@@ -32,6 +32,7 @@
                                 </td>
                                 <td>{{ info.1.file }}</td>
                                 <td class="align-middle">
+                                    <small class="text-muted">{{ info.1.score|div_perc:assignment.points|floatformat:1 }}%</small><br>
                                     {{ info.1.score }}/{{ assignment.points }}</td>
                                 <td class="align-middle">{{ info.1.comments }}</td>
                                 <td>
@@ -62,7 +63,7 @@
                                 {% if weighted %}
                                     <td class="text-center">{{ percentage_weight.1|percent|floatformat:1 }}%</td>
                                 {% endif %}
-                                <td class="text-center">{{ percentage_weight.0 }}%</td>
+                                <td class="text-center">{{ percentage_weight.0|floatformat:1 }}%</td>
                             </tr>
                         {% endfor %}
                     </tbody>

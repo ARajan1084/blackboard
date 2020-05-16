@@ -3,7 +3,7 @@
 {% load widget_tweaks %}
 {% load teacher_extras %}
 
-{% block title %}Assignment{% endblock %}
+{% block title %}P{{ period }}: {{ assignment.assignment_name }}{% endblock %}
 {% block css %}{% endblock %}
 
 {% block content %}
@@ -71,10 +71,10 @@
                                     <span class="font-weight-bold">Standard Dev: </span>
                                     <span>{{ stats.stdev|floatformat:1 }}</span>
                                     <br>
-                                    <span class="font-weight-bold">Lowest: </span>
+                                    <span class="font-weight-bold">Lowest Score: </span>
                                     <span>{{ stats.min }}</span>
                                     <br>
-                                    <span class="font-weight-bold">Highest: </span>
+                                    <span class="font-weight-bold">Highest Score: </span>
                                     <span>{{ stats.max }}</span>
                                 </p>
                             </div>

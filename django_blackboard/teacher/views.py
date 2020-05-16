@@ -3,7 +3,7 @@ from collections import OrderedDict
 from datetime import datetime
 from teacher.analysis import get_score_dist, get_score_hist, get_score_box, get_general_stats
 
-from student.views import calculate_grade
+from student.utils import calculate_grade
 from django.shortcuts import render, redirect, reverse
 from django.contrib import messages
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
@@ -14,6 +14,7 @@ from .models import Teacher
 from board.models import Class, ClassAssignments, Course, Assignment, Category, ClassCategories
 from student.models import ClassEnrollment, Student, Submission
 from .decorators import authentication_required
+from .utils import fetch_assignments, fetch_gradesheet_data, fetch_raw_grades
 
 
 @authentication_required
@@ -54,28 +55,16 @@ def gradesheet(request, class_id, active):
     course_name = get_course(class_id).course_name
     period = klass.period
     enrollments = ClassEnrollment.objects.all().filter(class_id=class_id)
-    assignment_ids = ClassAssignments.objects.all().filter(class_id=class_id)
-    assignments = []
-    for assignment_id in assignment_ids:
-        assignment = Assignment.objects.all().get(id=uuid.UUID(assignment_id.assignment_id).hex)
-        category = Category.objects.all().get(id=uuid.UUID(assignment.category_id))
-        assignments.append((assignment, category))
-    data = OrderedDict({})
-    grades = {}
-    for enrollment in enrollments:
-        student = Student.objects.all().get(student_id=enrollment.student_id)
-        grades.update({student: calculate_grade(assignments=[assignment[0] for assignment in assignments],
-                                 enrollment_id=str(enrollment.id.hex),
-                                 weighted=klass.weighted)})
-        for assignment, category in assignments:
-            submission = Submission.objects.get(enrollment_id=str(enrollment.id.hex),
-                                                assignment_id=str(assignment.id.hex))
-            try:
-                current = data[student]
-                score = (assignment, submission)
-                data[student] = current + (score,)
-            except:
-                data.update({student: ((assignment, submission),)})
+    assignments = fetch_assignments(class_id)
+
+    gradesheet_data = fetch_gradesheet_data(klass, enrollments, assignments)
+    data = gradesheet_data.get('data')
+    grades = gradesheet_data.get('grades')
+    raw_grades = fetch_raw_grades(grades)
+    grade_dist = get_score_dist(raw_grades)
+    grade_box = get_score_box(raw_grades)
+    grade_stats = get_general_stats(raw_grades, 100)
+
     context = {
         'active': active,
         'class_id': class_id,
@@ -83,16 +72,12 @@ def gradesheet(request, class_id, active):
         'period': period,
         'assignments': assignments,
         'data': data,
-        'grades': grades
+        'grades': grades,
+        'grade_dist': grade_dist,
+        'grade_box': grade_box,
+        'grade_stats': grade_stats
     }
     return render(request, 'teacher/gradesheet.html', context)
-
-
-@authentication_required
-def get_student_name(enrollment):
-    student = Student.objects.all().get(student_id=enrollment.student_id)
-    student_name = student.first_name + ' ' + student.last_name
-    return student_name
 
 
 @authentication_required
@@ -155,13 +140,15 @@ def new_assignment(request, class_id):
             points = form.cleaned_data.get('points')
             due_date = form.cleaned_data.get('due_date')
             due_time = form.cleaned_data.get('due_time')
+            est_completion_time_min = form.cleaned_data.get('est_completion_time_min')
             due = datetime.combine(due_date, due_time)
             assignment = Assignment(assignment_name=name,
                                     assignment_description=description,
                                     category_id=category_id,
                                     points=points,
                                     due_date=due,
-                                    assigned=timezone.now())
+                                    assigned=timezone.now(),
+                                    est_completion_time_min=est_completion_time_min)
             enrollments = ClassEnrollment.objects.all().filter(class_id=class_id)
             for enrollment in enrollments:
                 submission = Submission(assignment_id=str(assignment.id.hex),

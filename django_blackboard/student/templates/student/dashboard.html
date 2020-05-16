@@ -5,4 +5,68 @@
 {% block title %}P{{ period }}: Dashboard{% endblock %}
 
 {% block content %}
+    <div class="row pt-3">
+        <div class="col">
+            <h5 class="text-center"><span class="text-muted">Estimated Workload for P{{ period }}:</span>
+                {{ est_completion_time }} minutes</h5>
+        </div>
+    </div>
+    <div class="row pt-2">
+        <div class="card-group">
+            {% if due_tomorrow %}
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Due Tomorrow</h5>
+                        <table class="table text-white">
+                            <tbody>
+                                {% for assignment, submission in due_tomorrow.items %}
+                                    <tr>
+                                        <td>{{ assignment.assignment_name }}</td>
+                                        <td><small>{{ assignment.est_completion_time_min }} min</small></td>
+                                        <td>{{ assignment.points }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endif %}
+            {% if due_in_three_days %}
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Due in 3 Days</h5>
+                        <table class="table text-white">
+                            <tbody>
+                                {% for assignment, submission in due_in_three_days.items %}
+                                    <tr>
+                                        <td>{{ assignment.assignment_name }}</td>
+                                        <td><small>{{ assignment.est_completion_time_min }} min</small></td>
+                                        <td>{{ assignment.points }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endif %}
+            {% if due_in_a_week %}
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Due in a Week</h5>
+                        <table class="table text-white">
+                            <tbody>
+                                {% for assignment, submission in due_in_a_week.items %}
+                                    <tr>
+                                        <td>{{ assignment.assignment_name }}</td>
+                                        <td><small>{{ assignment.est_completion_time_min }} min</small></td>
+                                        <td>{{ assignment.points }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
 {% endblock %}
