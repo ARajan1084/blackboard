@@ -59,7 +59,7 @@
                     <tbody>
                         {% for category, percentage_weight in grades.2.items %}
                             <tr>
-                                <td title="{{ percentage_weight.1 }}">{{ category }}</td>
+                                <td title="{{ percentage_weight.1 }}">{{ category.category_name }}</td>
                                 {% if weighted %}
                                     <td class="text-center">{{ percentage_weight.1|percent|floatformat:1 }}%</td>
                                 {% endif %}

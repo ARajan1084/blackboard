@@ -5,6 +5,10 @@ import numpy as np
 import urllib
 import io
 import base64
+import random
+
+
+COLORS = ['darkred', 'orange', 'green', 'lightskyblue', 'lightslategrey']
 
 
 def get_general_stats(scores, points):
@@ -24,6 +28,7 @@ def get_general_stats(scores, points):
 def get_score_dist(scores):
     if not scores:
         return
+    color = random.choice(COLORS)
     x_min = min(scores)
     x_max = max(scores)
     avg = mean(scores)
@@ -33,8 +38,8 @@ def get_score_dist(scores):
 
     fig, ax1 = plt.subplots()
     ax2 = ax1.twinx()
-    ax2.hist(scores, alpha=0.5, edgecolor='None', color='orange')
-    ax1.plot(x, y, color='red', zorder=2)
+    ax2.hist(scores, alpha=0.5, edgecolor='None', color=color)
+    ax1.plot(x, y, color=color, zorder=2)
     ax1.grid()
     ax1.set_xlabel('Score')
     ax1.set_ylabel('Density')

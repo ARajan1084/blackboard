@@ -14,7 +14,7 @@ from .models import Teacher
 from board.models import Class, ClassAssignments, Course, Assignment, Category, ClassCategories
 from student.models import ClassEnrollment, Student, Submission
 from .decorators import authentication_required
-from .utils import fetch_assignments, fetch_gradesheet_data, fetch_raw_grades
+from .utils import fetch_assignments_with_categories, fetch_gradesheet_data, fetch_raw_grades, fetch_category_breakdown
 
 
 @authentication_required
@@ -55,7 +55,7 @@ def gradesheet(request, class_id, active):
     course_name = get_course(class_id).course_name
     period = klass.period
     enrollments = ClassEnrollment.objects.all().filter(class_id=class_id)
-    assignments = fetch_assignments(class_id)
+    assignments = fetch_assignments_with_categories(class_id)
 
     gradesheet_data = fetch_gradesheet_data(klass, enrollments, assignments)
     data = gradesheet_data.get('data')
@@ -64,6 +64,22 @@ def gradesheet(request, class_id, active):
     grade_dist = get_score_dist(raw_grades)
     grade_box = get_score_box(raw_grades)
     grade_stats = get_general_stats(raw_grades, 100)
+
+    category_breakdown = fetch_category_breakdown(klass, enrollments)
+    category_data = [[]]
+    r = 0
+    c = 1
+    for category, category_scores in category_breakdown.items():
+        if category_scores:
+            category_dist = get_score_dist(category_scores)
+            category_box = get_score_box(category_scores)
+            category_stats = get_general_stats(category_scores, 100)
+            category_data[r].append((category, (category_dist, category_box, category_stats)))
+            if c == 3:
+                r += 1
+                category_data.append([])
+                c = 1
+            c += 1
 
     context = {
         'active': active,
@@ -75,7 +91,8 @@ def gradesheet(request, class_id, active):
         'grades': grades,
         'grade_dist': grade_dist,
         'grade_box': grade_box,
-        'grade_stats': grade_stats
+        'grade_stats': grade_stats,
+        'category_data': category_data
     }
     return render(request, 'teacher/gradesheet.html', context)
 

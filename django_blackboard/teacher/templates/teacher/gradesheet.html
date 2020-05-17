@@ -55,7 +55,7 @@
     <div class="row pt-3">
         <div class="col">
             <h2>Analysis</h2>
-            <div class="card mb-5">
+            <div class="card">
                 <div class="row pt-2">
                     <div class="col">
                         <h4 class="text-center">Distribution</h4>
@@ -85,6 +85,35 @@
                         </div>
                     </div>
                 </div>
+            </div>
+            <div class="card mt-2 mb-5">
+                {% for row in category_data %}
+                    <div class="row pt-2">
+                        {% for col in row %}
+                            <div class="col">
+                                <h4 class="text-center">{{ col.0 }}</h4>
+                                <img class="card-img" src="data:image/png;base64,{{ col.1.0 }}">
+                                <img class="card-img" src="data:image/png;base64,{{ col.1.1 }}">
+                                <p class="pt-2 text-center">
+                                    <span class="font-weight-bold">Category Avg: </span>
+                                    <span>{{ col.1.2.mean|floatformat:2 }}%</span>
+                                    <br>
+                                    <span class="font-weight-bold">Category Median: </span>
+                                    <span>{{ col.1.2.median|floatformat:1 }}</span>
+                                    <br>
+                                    <span class="font-weight-bold">Category Standard Dev: </span>
+                                    <span>{{ col.1.2.stdev|floatformat:1 }}</span>
+                                    <br>
+                                    <span class="font-weight-bold">Category Lowest: </span>
+                                    <span>{{ col.1.2.min|floatformat:1 }}</span>
+                                    <br>
+                                    <span class="font-weight-bold">Category Highest: </span>
+                                    <span>{{ col.1.2.max|floatformat:1 }}</span>
+                                </p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
             </div>
         </div>
     </div>

@@ -2,8 +2,23 @@ import uuid
 from collections import OrderedDict
 
 from student.models import Student, Submission
-from board.models import ClassAssignments, Assignment, Category
+from board.models import ClassAssignments, Assignment, Category, ClassCategories
 from student.utils import calculate_grade
+
+
+def fetch_category_breakdown(klass, enrollments):
+    category_breakdown = {}
+    category_refs = ClassCategories.objects.all().filter(class_id=str(klass.id.hex))
+    for category_ref in category_refs:
+        category = Category.objects.all().get(id=uuid.UUID(category_ref.category_id))
+        category_breakdown.update({category: []})
+    for enrollment in enrollments:
+        assignments = fetch_assignments(str(klass.id.hex))
+        grades = calculate_grade(assignments=assignments, enrollment_id=str(enrollment.id.hex), weighted=klass.weighted)
+        for category, values in grades[2].items():
+            scores = category_breakdown.get(category)
+            scores.append(values[0])
+    return category_breakdown
 
 
 def fetch_raw_grades(grades):
@@ -14,6 +29,14 @@ def fetch_raw_grades(grades):
 
 
 def fetch_assignments(class_id):
+    assignment_refs = ClassAssignments.objects.all().filter(class_id=class_id)
+    assignments = []
+    for assignment_ref in assignment_refs:
+        assignments.append(Assignment.objects.all().get(id=uuid.UUID(assignment_ref.assignment_id)))
+    return assignments
+
+
+def fetch_assignments_with_categories(class_id):
     assignment_ids = ClassAssignments.objects.all().filter(class_id=class_id)
     assignments = []
     for assignment_id in assignment_ids:

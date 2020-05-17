@@ -106,21 +106,20 @@ def calculate_grade(assignments, enrollment_id, weighted):
     categories = {}
     for assignment in assignments:
         category = Category.objects.all().get(id=uuid.UUID(assignment.category_id).hex)
-        category_name = category.category_name
         category_weight = category.category_weight
         points = assignment.points
         earned = Submission.objects.all().get(enrollment_id=enrollment_id, assignment_id=str(assignment.id.hex)).score
         if earned is not None:
-            sub_score = categories.get(category_name)
+            sub_score = categories.get(category)
             if sub_score is not None:
                 sub_score[0] += earned
                 sub_score[1] += points
             else:
-                categories.update({category_name: [earned, points, category_weight]})
+                categories.update({category: [earned, points, category_weight]})
 
     category_breakdown = {}
-    for category_name, values in categories.items():
-        category_breakdown.update({category_name: (values[0] * 100/values[1], values[2])})
+    for category, values in categories.items():
+        category_breakdown.update({category: (values[0] * 100/values[1], values[2])})
 
     if weighted:
         if not categories:
