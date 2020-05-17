@@ -32,8 +32,13 @@
                                 </td>
                                 <td>{{ info.1.file }}</td>
                                 <td class="align-middle">
-                                    <small class="text-muted">{{ info.1.score|div_perc:assignment.points|floatformat:1 }}%</small><br>
-                                    {{ info.1.score }}/{{ assignment.points }}</td>
+                                    {% if info.1.score %}
+                                        <small class="text-muted">{{ info.1.score|div_perc:assignment.points|floatformat:1 }}%</small><br>
+                                        {{ info.1.score }}/{{ assignment.points }}
+                                    {% else %}
+                                        <span class="text-muted">-/{{ assignment.points }}</span>
+                                    {% endif %}
+                                </td>
                                 <td class="align-middle">{{ info.1.comments }}</td>
                                 <td>
                                     <small class="text-muted">Assigned: {{ assignment.assigned|date:'m/d' }}</small><br>

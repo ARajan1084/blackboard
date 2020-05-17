@@ -11,7 +11,9 @@
         <div class="row pt-3">
             <div class="col">
                 <h2>{{ assignment.assignment_name }}</h2>
-                <form class="" method="post">
+                <small class="text-muted">Assigned: {{ assignment.assigned }}</small><br>
+                <small class="text-muted">Due: {{ assignment.due_date }}</small>
+                <form class="pt-2" method="post">
                     {% csrf_token %}
                     {% if edit == "edit=false" %}
                         <button class="btn btn-outline-danger" name="delete" title="Delete Assignment">

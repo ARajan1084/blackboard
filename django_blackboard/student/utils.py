@@ -16,31 +16,34 @@ def get_assignments(enrollment):
     return assignments
 
 
-def fetch_upcoming(submissions):
+def fetch_relevant(submissions):
+    late = {}
     tests = {}
+    due_tomorrow = {}
+    due_in_three_days = {}
+    due_in_a_week = {}
     for assignment, submission in list(submissions.items()):
         if assignment.due_date > timezone.now():
             category = Category.objects.all().get(id=uuid.UUID(assignment.category_id).hex)
             if ('Test' in category.category_name) or ('Quiz' in category.category_name):
                 tests.update({assignment: submissions.pop(assignment)})
+            elif submission.score is None:
+                due_date = assignment.due_date
+                current_date = timezone.now()
+                delta = due_date - current_date
+                if delta.days <= 1:
+                    due_tomorrow.update({assignment: submissions.pop(assignment)})
+                elif delta.days <= 3:
+                    due_in_three_days.update({assignment: submissions.pop(assignment)})
+                elif delta.days <= 8:
+                    due_in_a_week.update({assignment: submissions.pop(assignment)})
+        elif submission.score == 0:
+            late.update({assignment: submissions.pop(assignment)})
         else:
             submissions.pop(assignment)
 
-    due_tomorrow = {}
-    due_in_three_days = {}
-    due_in_a_week = {}
-    for assignment, submission in list(submissions.items()):
-        if submission.score is None:
-            due_date = assignment.due_date
-            current_date = timezone.now()
-            delta = due_date - current_date
-            if delta.days <= 1:
-                due_tomorrow.update({assignment: submissions.pop(assignment)})
-            elif delta.days <= 3:
-                due_in_three_days.update({assignment: submissions.pop(assignment)})
-            elif delta.days <= 8:
-                due_in_a_week.update({assignment: submissions.pop(assignment)})
     upcoming = {
+        'late': late,
         'tests': tests,
         'due_tomorrow': due_tomorrow,
         'due_in_three_days': due_in_three_days,

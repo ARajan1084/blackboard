@@ -12,7 +12,7 @@ from .models import Student, ClassEnrollment, Submission
 from board.models import Course, Class, ClassAssignments, Assignment, Category, ClassCategories, Schedule
 from teacher.models import Teacher
 from .utils import calculate_grade, get_student_submissions, get_enrollments, get_class_data, \
-    fetch_upcoming, calculate_workload, get_assignments
+    fetch_relevant, calculate_workload, get_assignments
 
 
 def student_calendar(request):
@@ -70,7 +70,8 @@ def dashboard(request, enrollment_id, active):
     period = klass.period
     submissions = get_student_submissions((enrollment,))
 
-    upcoming = fetch_upcoming(submissions)
+    upcoming = fetch_relevant(submissions)
+    late = upcoming.get('late')
     tests = upcoming.get('tests')
     due_tomorrow = upcoming.get('due_tomorrow')
     due_in_three_days = upcoming.get('due_in_three_days')
@@ -82,6 +83,7 @@ def dashboard(request, enrollment_id, active):
         'course': course,
         'enrollment_id': enrollment_id,
         'active': active,
+        'late': late,
         'due_tomorrow': due_tomorrow,
         'due_in_three_days': due_in_three_days,
         'due_in_a_week': due_in_a_week,
@@ -129,15 +131,17 @@ def home(request):
     submissions = get_student_submissions(enrollments)
     class_data = get_class_data(enrollments)
 
-    upcoming = fetch_upcoming(submissions)
-    tests = upcoming.get('tests')
-    due_tomorrow = upcoming.get('due_tomorrow')
-    due_in_three_days = upcoming.get('due_in_three_days')
-    due_in_a_week = upcoming.get('due_in_a_week')
+    relevant = fetch_relevant(submissions)
+    late = relevant.get('late')
+    tests = relevant.get('tests')
+    due_tomorrow = relevant.get('due_tomorrow')
+    due_in_three_days = relevant.get('due_in_three_days')
+    due_in_a_week = relevant.get('due_in_a_week')
     est_completion_time = calculate_workload(enrollments)
 
     context = {
         'class_data': class_data,
+        'late': late,
         'due_tomorrow': due_tomorrow,
         'due_in_three_days': due_in_three_days,
         'due_in_a_week': due_in_a_week,

@@ -34,39 +34,7 @@
                         {% endfor %}
                     </tbody>
                 </table>
-                {% if due_tomorrow %}
-                    <h2>Due Tomorrow</h2>
-                    <table class="table table-striped">
-                        {% for assignment, submission in due_tomorrow.items %}
-                            <tr>
-                                <td>{{ assignment.assignment_name }}</td>
-                                <td>{{ assignment.points }} Points</td>
-                            </tr>
-                        {% endfor %}
-                    </table>
-                {% endif %}
-                {% if due_in_three_days %}
-                    <h2>Due in 3 Days</h2>
-                    <table class="table table-striped">
-                        {% for assignment, submission in due_in_three_days.items %}
-                            <tr>
-                                <td>{{ assignment.assignment_name }}</td>
-                                <td>{{ assignment.points }} Points</td>
-                            </tr>
-                        {% endfor %}
-                    </table>
-                {% endif %}
-                {% if due_in_a_week %}
-                    <h2>Due in a Week</h2>
-                    <table class="table table-striped">
-                        {% for assignment, submission in due_in_a_week.items %}
-                            <tr>
-                                <td>{{ assignment.assignment_name }}</td>
-                                <td>{{ assignment.points }} Points</td>
-                            </tr>
-                        {% endfor %}
-                    </table>
-                {% endif %}
+
             </div>
             <div class="col-lg">
                 <h2>Announcements</h2>
@@ -86,7 +54,80 @@
                         </tr>
                     </tbody>
                 </table>
-                <h3>Est Workload: {{ est_completion_time }} min</h3>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-8">
+                {% if late %}
+                    <h2 class="pt-3">Late/Missing</h2>
+                    <table class="table table-striped">
+                        {% for assignment, submission in late.items %}
+                            <tr>
+                                <td>{{ assignment.assignment_name }}</td>
+                                {% if assignment.est_completion_time_min %}
+                                    <td><small>{{ assignment.est_completion_time_min }} min</small></td>
+                                {% endif %}
+                                <td class="float-right">{{ assignment.points }} Points</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% endif %}
+                {% if due_tomorrow %}
+                    <h2 class="pt-3">Due Tomorrow</h2>
+                    <table class="table table-striped">
+                        {% for assignment, submission in due_tomorrow.items %}
+                            <tr>
+                                <td>{{ assignment.assignment_name }}</td>
+                                {% if assignment.est_completion_time_min %}
+                                    <td><small>{{ assignment.est_completion_time_min }} min</small></td>
+                                {% endif %}
+                                <td class="float-right">{{ assignment.points }} Points</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% endif %}
+                {% if due_in_three_days %}
+                    <h2 class="pt-3">Due in 3 Days</h2>
+                    <table class="table table-striped">
+                        {% for assignment, submission in due_in_three_days.items %}
+                            <tr>
+                                <td>{{ assignment.assignment_name }}</td>
+                                {% if assignment.est_completion_time_min %}
+                                    <td><small>{{ assignment.est_completion_time_min }} min</small></td>
+                                {% endif %}
+                                <td class="float-right">{{ assignment.points }} Points</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% endif %}
+                {% if due_in_a_week %}
+                    <h2 class="pt-3">Due in a Week</h2>
+                    <table class="table table-striped">
+                        {% for assignment, submission in due_in_a_week.items %}
+                            <tr>
+                                <td>{{ assignment.assignment_name }}</td>
+                                {% if assignment.est_completion_time_min %}
+                                    <td><small>{{ assignment.est_completion_time_min }} min</small></td>
+                                {% endif %}
+                                <td class="float-right">{{ assignment.points }} Points</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% endif %}
+                {% if tests %}
+                    <h2 class="pt-3">Upcoming Test</h2>
+                    <table class="table table-striped">
+                        {% for assignment, submission in tests.items %}
+                            <tr>
+                                <td>{{ assignment.assignment_name }}</td>
+                                <td class="float-right">{{ assignment.points }} Points</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% endif %}
+            </div>
+            <div class="col-4">
+                <h2>Est. Workload: {{ est_completion_time }} min</h2>
             </div>
         </div>
     </div>

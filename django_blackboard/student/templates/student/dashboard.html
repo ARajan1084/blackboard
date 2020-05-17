@@ -13,6 +13,28 @@
     </div>
     <div class="row pt-2">
         <div class="card-group">
+            {% if late %}
+                <div class="card bg-danger text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Late/Missing</h5>
+                        <table class="table text-white">
+                            <tbody>
+                                {% for assignment, submission in late.items %}
+                                    <tr>
+                                        <td>{{ assignment.assignment_name }}</td>
+                                        {% if assignment.est_completion_time_min %}
+                                            <td><small>{{ assignment.est_completion_time_min }} min</small></td>
+                                        {% else %}
+                                            <td></td>
+                                        {% endif %}
+                                        <td>{{ assignment.points }}P</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endif %}
             {% if due_tomorrow %}
                 <div class="card bg-warning text-white">
                     <div class="card-body">
@@ -23,7 +45,7 @@
                                     <tr>
                                         <td>{{ assignment.assignment_name }}</td>
                                         <td><small>{{ assignment.est_completion_time_min }} min</small></td>
-                                        <td>{{ assignment.points }}</td>
+                                        <td>{{ assignment.points }}P</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
@@ -41,7 +63,7 @@
                                     <tr>
                                         <td>{{ assignment.assignment_name }}</td>
                                         <td><small>{{ assignment.est_completion_time_min }} min</small></td>
-                                        <td>{{ assignment.points }}</td>
+                                        <td>{{ assignment.points }}P</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
@@ -59,7 +81,7 @@
                                     <tr>
                                         <td>{{ assignment.assignment_name }}</td>
                                         <td><small>{{ assignment.est_completion_time_min }} min</small></td>
-                                        <td>{{ assignment.points }}</td>
+                                        <td>{{ assignment.points }}P</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
