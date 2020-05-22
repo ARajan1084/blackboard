@@ -17,106 +17,119 @@
         <button class="btn btn-outline-primary ml-auto" title="Edit Gradesheet">
             <i class="fa fa-pencil-alt"></i></button>
     </div>
-    <div class="row pt-3">
-        <div class="col">
-            <div class="table-responsive">
-                <table class="table table-sm table-bordered table-striped" data-toggle="table">
-                    <thead>
-                        <tr>
-                            <th data-sortable="True" class="">Student</th>
-                            {% for assignment in assignments %}
-                                <th class="" data-sortable="True">
-                                    <small class="text-muted">{{ assignment.1.category_name }}</small><br>
-                                    <a href="{% url 'teacher-assignment' class_id=class_id assignment_id=assignment.0.id|uuid_to_str edit='edit=false' %}">{{ assignment.0.assignment_name }}</a>
-                                </th>
-                            {% endfor %}
-                            <th data-sortable="True">Grade</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for student, values in data.items %}
+    {% if assignments %}
+        <div class="row pt-3">
+            <div class="col">
+                <div class="" style="overflow-x: scroll;">
+                    <table class="table table-sm table-bordered table-striped table-nonfluid table-header-rotated" data-toggle="">
+                        <thead>
                             <tr>
-                                <td>{{ student|name }}</td>
-                                {% for submission in values %}
-                                    {% if submission.1.score %}
-                                        <td>{{ submission.1.score }} / {{ submission.0.points }}</td>
-                                    {% else %}
-                                        <td>- / {{ submission.0.points }}</td>
-                                    {% endif %}
+                                <th class="no-border" style="width: 200px"></th>
+                                {% for assignment in assignments %}
+                                    <th class="rotate-45" style="width: 70px">
+                                        <div class="">
+                                            <span class="">
+                                                <small class="text-muted nowrap">{{ assignment.1.category_name }}</small><br>
+                                                <a href="{% url 'teacher-assignment' class_id=class_id assignment_id=assignment.0.id|uuid_to_str edit='edit=false' %}">
+                                                    {{ assignment.0.assignment_name }}</a>
+                                            </span>
+                                        </div>
+                                    </th>
                                 {% endfor %}
-                                <td>{{ grades|get_item:student|get_element:1|floatformat:2 }}% - {{ grades|get_item:student|get_element:0 }}</td>
+                                <th data-sortable="True" class="no-border">Grade</th>
                             </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {% for student, values in data.items %}
+                                <tr>
+                                    <td style="border-left: 1px solid #FFF"><span class="nowrap">{{ student|name }}</span></td>
+                                    {% for submission in values %}
+                                        {% if submission.1.score %}
+                                            <td class="nowrap">{{ submission.1.score }} / {{ submission.0.points }}</td>
+                                        {% else %}
+                                            <td class="nowrap">- / {{ submission.0.points }}</td>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <td><span class="nowrap">{{ grades|get_item:student|get_element:1|floatformat:2 }}% - {{ grades|get_item:student|get_element:0 }}</span></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
+        {% else %}
+            <div class="row justify-content-center">
+                <small class="text-center">No assignments to show</small>
+            </div>
+        {% endif %}
     </div>
-    <div class="row pt-3">
-        <div class="col">
-            <h2>Analysis</h2>
-            <div class="card">
-                <div class="row pt-2">
-                    <div class="col">
-                        <h4 class="text-center">Distribution</h4>
-                        <img class="card-img" src="data:image/png;base64,{{ grade_dist }}">
-                    </div>
-                    <div class="col">
-                        <h4 class="text-center">Box Plot</h4>
-                        <img class="card-img" src="data:image/png;base64,{{ grade_box }}">
-                        <h4 class="pt-3 text-center">General Statistics</h4>
-                        <div>
-                            <p class="pt-2">
-                                <span class="font-weight-bold">Average: </span>
-                                <span>{{ grade_stats.mean|floatformat:2 }}%</span>
-                                <br>
-                                <span class="font-weight-bold">Median: </span>
-                                <span>{{ grade_stats.median|floatformat:1 }}</span>
-                                <br>
-                                <span class="font-weight-bold">Standard Dev: </span>
-                                <span>{{ grade_stats.stdev|floatformat:1 }}</span>
-                                <br>
-                                <span class="font-weight-bold">Lowest Score: </span>
-                                <span>{{ grade_stats.min|floatformat:1 }}</span>
-                                <br>
-                                <span class="font-weight-bold">Highest Score: </span>
-                                <span>{{ grade_stats.max|floatformat:1 }}</span>
-                            </p>
+    {% if grade_stats %}
+        <div class="row pt-3">
+            <div class="col">
+                <h2>Analysis</h2>
+                <div class="card">
+                    <div class="row pt-2">
+                        <div class="col">
+                            <h4 class="text-center">Distribution</h4>
+                            <img class="card-img" src="data:image/png;base64,{{ grade_dist }}">
+                        </div>
+                        <div class="col">
+                            <h4 class="text-center">Box Plot</h4>
+                            <img class="card-img" src="data:image/png;base64,{{ grade_box }}">
+                            <h4 class="pt-3 text-center">General Statistics</h4>
+                            <div>
+                                <p class="pt-2">
+                                    <span class="font-weight-bold">Average: </span>
+                                    <span>{{ grade_stats.mean|floatformat:2 }}%</span>
+                                    <br>
+                                    <span class="font-weight-bold">Median: </span>
+                                    <span>{{ grade_stats.median|floatformat:1 }}</span>
+                                    <br>
+                                    <span class="font-weight-bold">Standard Dev: </span>
+                                    <span>{{ grade_stats.stdev|floatformat:1 }}</span>
+                                    <br>
+                                    <span class="font-weight-bold">Lowest Score: </span>
+                                    <span>{{ grade_stats.min|floatformat:1 }}</span>
+                                    <br>
+                                    <span class="font-weight-bold">Highest Score: </span>
+                                    <span>{{ grade_stats.max|floatformat:1 }}</span>
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="card mt-2 mb-5">
-                {% for row in category_data %}
-                    <div class="row pt-2">
-                        {% for col in row %}
-                            <div class="col">
-                                <h4 class="text-center">{{ col.0 }}</h4>
-                                <img class="card-img" src="data:image/png;base64,{{ col.1.0 }}">
-                                <img class="card-img" src="data:image/png;base64,{{ col.1.1 }}">
-                                <p class="pt-2 text-center">
-                                    <span class="font-weight-bold">Category Avg: </span>
-                                    <span>{{ col.1.2.mean|floatformat:2 }}%</span>
-                                    <br>
-                                    <span class="font-weight-bold">Category Median: </span>
-                                    <span>{{ col.1.2.median|floatformat:1 }}</span>
-                                    <br>
-                                    <span class="font-weight-bold">Category Standard Dev: </span>
-                                    <span>{{ col.1.2.stdev|floatformat:1 }}</span>
-                                    <br>
-                                    <span class="font-weight-bold">Category Lowest: </span>
-                                    <span>{{ col.1.2.min|floatformat:1 }}</span>
-                                    <br>
-                                    <span class="font-weight-bold">Category Highest: </span>
-                                    <span>{{ col.1.2.max|floatformat:1 }}</span>
-                                </p>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% endfor %}
+                <div class="card mt-2 mb-5">
+                    {% for row in category_data %}
+                        <div class="row pt-2">
+                            {% for col in row %}
+                                <div class="col">
+                                    <h4 class="text-center">{{ col.0 }}</h4>
+                                    <img class="card-img" src="data:image/png;base64,{{ col.1.0 }}">
+                                    <img class="card-img" src="data:image/png;base64,{{ col.1.1 }}">
+                                    <p class="pt-2 text-center">
+                                        <span class="font-weight-bold">Category Avg: </span>
+                                        <span>{{ col.1.2.mean|floatformat:2 }}%</span>
+                                        <br>
+                                        <span class="font-weight-bold">Category Median: </span>
+                                        <span>{{ col.1.2.median|floatformat:1 }}</span>
+                                        <br>
+                                        <span class="font-weight-bold">Category Standard Dev: </span>
+                                        <span>{{ col.1.2.stdev|floatformat:1 }}</span>
+                                        <br>
+                                        <span class="font-weight-bold">Category Lowest: </span>
+                                        <span>{{ col.1.2.min|floatformat:1 }}</span>
+                                        <br>
+                                        <span class="font-weight-bold">Category Highest: </span>
+                                        <span>{{ col.1.2.max|floatformat:1 }}</span>
+                                    </p>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
-    </div>
+    {% endif %}
 {% endblock %}
 {% block scripts %}
 {% endblock %}

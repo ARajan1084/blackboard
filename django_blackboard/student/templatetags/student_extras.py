@@ -11,3 +11,8 @@ def div_perc(num, denom):
 def percent(decimal):
     if decimal:
         return decimal * 100
+
+
+@register.filter
+def firm_url(relative, request):
+    return request.build_absolute_uri(relative)

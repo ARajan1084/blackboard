@@ -4,21 +4,23 @@ import uuid
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
+from django.urls import reverse
 from django.utils import timezone
 
 from .forms import UserLoginForm
 from django.contrib.auth.decorators import login_required
 from .models import Student, ClassEnrollment, Submission
-from board.models import Course, Class, ClassAssignments, Assignment, Category, ClassCategories, Schedule
-from teacher.models import Teacher
+from board.models import Course, Class, ClassAssignments, Assignment, Category, ClassCategories, Schedule, Notification
 from .utils import calculate_grade, get_student_submissions, get_enrollments, get_class_data, \
     fetch_relevant, calculate_workload, get_assignments
+from .decorators import authentication_required
 
 
 def student_calendar(request):
     return render(request, 'student/calendar.html')
 
 
+@authentication_required
 def klass(request, element, enrollment_id):
     if element == 'grades':
         return grades(request, enrollment_id, active=element)
@@ -30,7 +32,7 @@ def klass(request, element, enrollment_id):
         return discussions(request, enrollment_id, active=element)
 
 
-@login_required()
+@authentication_required
 def grades(request, enrollment_id, active):
     enrollment = ClassEnrollment.objects.all().get(id=uuid.UUID(enrollment_id).hex)
     klass = Class.objects.all().get(id=uuid.UUID(enrollment.class_id).hex)
@@ -61,7 +63,7 @@ def grades(request, enrollment_id, active):
     return render(request, 'student/grades.html', context)
 
 
-@login_required()
+@authentication_required
 def dashboard(request, enrollment_id, active):
     enrollment = ClassEnrollment.objects.all().get(id=uuid.UUID(enrollment_id).hex)
     assignments = get_assignments(enrollment)
@@ -93,7 +95,7 @@ def dashboard(request, enrollment_id, active):
     return render(request, 'student/dashboard.html', context)
 
 
-@login_required()
+@authentication_required
 def resources(request, enrollment_id, active):
     enrollment = ClassEnrollment.objects.all().get(id=uuid.UUID(enrollment_id).hex)
     klass = Class.objects.all().get(id=uuid.UUID(enrollment.class_id).hex)
@@ -108,7 +110,7 @@ def resources(request, enrollment_id, active):
     return render(request, 'student/resources.html', context)
 
 
-@login_required()
+@authentication_required
 def discussions(request, enrollment_id, active):
     enrollment = ClassEnrollment.objects.all().get(id=uuid.UUID(enrollment_id).hex)
     klass = Class.objects.all().get(id=uuid.UUID(enrollment.class_id).hex)
@@ -123,8 +125,9 @@ def discussions(request, enrollment_id, active):
     return render(request, 'student/discussions.html', context)
 
 
-@login_required()
+@authentication_required
 def home(request):
+    notifications = Notification.objects.all().filter(recipient=request.user)
     student = Student.objects.all().get(user=request.user)
     enrollments = get_enrollments(student)
 
@@ -139,14 +142,23 @@ def home(request):
     due_in_a_week = relevant.get('due_in_a_week')
     est_completion_time = calculate_workload(enrollments)
 
+    class_workloads = {}
+    for enrollment in enrollments:
+        klass = Class.objects.all().get(id=uuid.UUID(enrollment.class_id))
+        course = Course.objects.all().get(course_id=klass.course_id)
+        class_workloads.update({course: calculate_workload((enrollment, ))})
+
     context = {
+        'request': request,
+        'notifications': notifications,
         'class_data': class_data,
         'late': late,
         'due_tomorrow': due_tomorrow,
         'due_in_three_days': due_in_three_days,
         'due_in_a_week': due_in_a_week,
         'tests': tests,
-        'est_completion_time': est_completion_time
+        'est_completion_time': est_completion_time,
+        'class_workloads': class_workloads
     }
     return render(request, 'student/home.html', context)
 

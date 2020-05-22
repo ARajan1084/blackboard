@@ -1,7 +1,7 @@
 .verticalTableHeader {
     text-align:center;
     white-space:nowrap;
-    g-origin:50% 50%;
+    g-origin: 50% 50%;
     -webkit-transform: rotate(90deg);
     -moz-transform: rotate(90deg);
     -ms-transform: rotate(90deg);
@@ -9,11 +9,12 @@
     transform: rotate(90deg);
 
 }
-.verticalTableHeader p {
+.verticalTableHeader small a span {
     margin:0 -100% ;
     display:inline-block;
 }
-.verticalTableHeader p:before{
+
+.verticalTableHeader small:before a:before span:before{
     content:'';
     width:0;
     padding-top:110%;/* takes width as reference, + 10% for faking some extra padding */
@@ -21,7 +22,115 @@
     vertical-align:middle;
 }
 
-/*.table-responsive {*/
-/*    max-width: 800px;*/
-/*    overflow: auto;*/
+/*thead tr th div, .vertical {*/
+/*    writing-mode: vertical-rl;*/
+/*    transform: rotate(180deg);*/
 /*}*/
+
+.table-nonfluid {
+    width: auto !important;
+}
+
+.nowrap {
+    white-space: nowrap;
+}
+
+.container th.no-border {
+    border-top: solid 1px #FFF;
+    border-left: solid 1px #FFF;
+    border-right: solid 1px #FFF;
+}
+
+/*th.rotate {*/
+/*  !* Something you can count on *!*/
+/*  height: 140px;*/
+/*  white-space: nowrap;*/
+/*}*/
+
+/*th.rotate > div {*/
+/*  transform:*/
+/*    !* Magic Numbers *!*/
+/*    translate(25px, 20px)*/
+/*    !* 45 is really 360 - 45 *!*/
+/*    rotate(315deg);*/
+/*  width: 30px;*/
+/*}*/
+/*th.rotate > div > span {*/
+/*  border-bottom: 1px solid #ccc;*/
+/*  padding: 5px 10px;*/
+/*}*/
+
+/*.rotated-header {*/
+/*    height: 75px;*/
+/*    vertical-align: center;*/
+/*    border: 1px solid white;*/
+/*    text-align: left;*/
+/*    line-height: 1;*/
+/*  }*/
+
+/*.rotated-header-container {*/
+/*    width: 75px;*/
+/*}*/
+
+/*.rotated-header-content {*/
+/*    width: 75px;*/
+/*    border-left: 1px solid lightgrey;*/
+/*    border-right: 1px solid lightgrey;*/
+/*    transform-origin: bottom right;*/
+/*    transform: translateX(-100px) rotate(45deg);*/
+/*}*/
+
+
+
+.table-header-rotated th.rotate-45{
+    height: 160px;
+    width: 40px;
+    min-width: 40px;
+    max-width: 40px;
+    position: relative;
+    vertical-align: bottom;
+    padding: 0;
+    font-size: 12px;
+    border: 1px solid white;
+}
+
+.table-header-rotated th.rotate-45:nth-child(2) > div {
+    border-left: 1px solid lightgrey;
+}
+
+.table-header-rotated th.rotate-45 > div{
+    position: relative;
+    top: 0px;
+    left: -80px; /* 80 * tan(45) / 2 = 40 where 80 is the height on the cell and 45 is the transform angle*/
+    height: 100%;
+    -ms-transform:skew(45deg,0deg);
+    -moz-transform:skew(45deg,0deg);
+    -webkit-transform:skew(45deg,0deg);
+    -o-transform:skew(45deg,0deg);
+    transform:skew(45deg,0deg);
+    overflow: hidden;
+    border-bottom: 1px solid lightgrey;
+    border-right: 1px solid lightgrey;
+    /*border-top: 1px solid lightgrey;*/
+}
+
+
+.table-header-rotated th.rotate-45 span {
+    -ms-transform:skew(-45deg,0deg) rotate(45deg);
+    -moz-transform:skew(-45deg,0deg) rotate(45deg);
+    -webkit-transform:skew(-45deg,0deg) rotate(45deg);
+    -o-transform:skew(-45deg,0deg) rotate(45deg);
+    transform:skew(-45deg,0deg) rotate(45deg) translate(100px, -20px);
+    position: absolute;
+    bottom: 120px; /* 40 cos(45) = 28 with an additional 2px margin*/
+    left: -50px; /*Because it looked good, but there is probably a mathematical link here as well*/
+    display: inline-block;
+    width: 100px; /* 80 / cos(45) - 40 cos (45) = 85 where 80 is the height of the cell, 40 the width of the cell and 45 the transform angle*/
+    text-align: left;
+    white-space: nowrap; /*whether to display in one line or not*/
+}
+
+.table-header-rotated th.rotate-45 a {
+    width: auto;
+    height: auto;
+}

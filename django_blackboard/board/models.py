@@ -4,6 +4,21 @@ import uuid
 from django.utils import timezone
 
 
+class Notification(models.Model):
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE)
+    message = models.TextField(max_length=150)
+    sent_date = models.DateTimeField(auto_now_add=True)
+    link = models.TextField(max_length=200, null=True)
+    read = models.BooleanField(null=True, default=False)
+
+    def __str__(self):
+        return str(self.recipient) + '_' + self.message + '_' + self.link
+
+    class Meta:
+        db_table = 'notifications'
+        order_with_respect_to = 'recipient'
+
+
 class Schedule(models.Model):
     period = models.CharField(unique=False, max_length=8)
     day = models.IntegerField()

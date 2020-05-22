@@ -99,9 +99,15 @@ def calculate_workload(enrollments):
         assignment_refs = ClassAssignments.objects.all().filter(class_id=enrollment.class_id)
         for assignment_ref in assignment_refs:
             assignment = Assignment.objects.all().get(id=uuid.UUID(assignment_ref.assignment_id))
-            submission = Submission.objects.all().get(enrollment_id=str(enrollment.id.hex), assignment_id=str(assignment.id.hex))
-            if (assignment.due_date > timezone.now()) and (not submission.complete):
-                est_completion_time += assignment.est_completion_time_min
+            if assignment.est_completion_time_min:
+                submission = Submission.objects.all().get(enrollment_id=str(enrollment.id.hex), assignment_id=str(assignment.id.hex))
+                if (assignment.due_date > timezone.now()) and (not submission.complete):
+                    time_until_due = assignment.due_date - timezone.now()
+                    if time_until_due.days == 0:
+                        est_completion_time += assignment.est_completion_time_min
+                    else:
+                        est_completion_time += int(assignment.est_completion_time_min * 1 / time_until_due.days)
+
     return est_completion_time
 
 
@@ -142,9 +148,13 @@ def calculate_grade(assignments, enrollment_id, weighted):
             points = assignment.points
             earned = Submission.objects.all().get(enrollment_id=enrollment_id,
                                                   assignment_id=str(assignment.id.hex)).score
-            total_score[0] += earned
-            total_score[1] += points
-        overall_grade_percentage = decimal.Decimal(total_score[0] * 100 / total_score[1])
+            if earned:
+                total_score[0] += earned
+                total_score[1] += points
+        if total_score[1] == 0:
+            return None
+        else:
+            overall_grade_percentage = decimal.Decimal(total_score[0] * 100 / total_score[1])
         return letter_grade(overall_grade_percentage/100), overall_grade_percentage, category_breakdown
 
 

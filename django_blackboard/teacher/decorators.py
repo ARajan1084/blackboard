@@ -11,7 +11,7 @@ def authentication_required(function):
         try:
             teacher = Teacher.objects.all().get(user=user)
         except:
-            return redirect('teacher-login')
+            return redirect('teacher-logout')
         if kwargs.get('class_id'):
             klass = Class.objects.all().get(id=uuid.UUID(kwargs.get('class_id')))
             if klass.teacher_id == str(teacher.id.hex):

@@ -15,16 +15,18 @@ def fetch_category_breakdown(klass, enrollments):
     for enrollment in enrollments:
         assignments = fetch_assignments(str(klass.id.hex))
         grades = calculate_grade(assignments=assignments, enrollment_id=str(enrollment.id.hex), weighted=klass.weighted)
-        for category, values in grades[2].items():
-            scores = category_breakdown.get(category)
-            scores.append(values[0])
+        if grades:
+            for category, values in grades[2].items():
+                scores = category_breakdown.get(category)
+                scores.append(values[0])
     return category_breakdown
 
 
 def fetch_raw_grades(grades):
     raw_grades = []
     for student, grade in grades.items():
-        raw_grades.append(float(grade[1]))
+        if grade:
+            raw_grades.append(float(grade[1]))
     return raw_grades
 
 
@@ -63,6 +65,9 @@ def fetch_gradesheet_data(klass, enrollments, assignments):
                 data[student] = current + (score,)
             except:
                 data.update({student: ((assignment, submission),)})
+    # data = sorted(data.items(), key=lambda tup: tup[0].first_name)
+    # print(data)
+
     gradesheet_data = {
         'grades': grades,
         'data': data

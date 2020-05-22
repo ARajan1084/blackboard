@@ -35,6 +35,8 @@
                                     {% if info.1.score %}
                                         <small class="text-muted">{{ info.1.score|div_perc:assignment.points|floatformat:1 }}%</small><br>
                                         {{ info.1.score }}/{{ assignment.points }}
+                                    {% elif info.1.score == 0 %}
+                                        <span style="color:red; font-weight: bold;">0/{{ assignment.points }}</span>
                                     {% else %}
                                         <span class="text-muted">-/{{ assignment.points }}</span>
                                     {% endif %}
@@ -51,7 +53,7 @@
             </div>
             <div class="col-lg-4">
                 <h2>Breakdown</h2>
-                <table class="table table-striped">
+                <table class="table table-striped table-borderless">
                     <thead>
                         <tr>
                             <th>Category</th>

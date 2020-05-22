@@ -1,7 +1,9 @@
 {% extends 'student/class.html' %}
 {% load static %}
 
-{% block css %}{% endblock%}
+{% block css %}
+    <link rel="stylesheet" href="{% static 'student/dashboard.css' %}">
+{% endblock%}
 {% block title %}P{{ period }}: Dashboard{% endblock %}
 
 {% block content %}
@@ -14,10 +16,10 @@
     <div class="row pt-2">
         <div class="card-group">
             {% if late %}
-                <div class="card bg-danger text-white">
+                <div class="card mr-2 card-late">
                     <div class="card-body">
                         <h5 class="card-title">Late/Missing</h5>
-                        <table class="table text-white">
+                        <table class="table">
                             <tbody>
                                 {% for assignment, submission in late.items %}
                                     <tr>
@@ -36,15 +38,19 @@
                 </div>
             {% endif %}
             {% if due_tomorrow %}
-                <div class="card bg-warning text-white">
+                <div class="card card-due-tmmrw mr-3 ml-1">
                     <div class="card-body">
                         <h5 class="card-title">Due Tomorrow</h5>
-                        <table class="table text-white">
+                        <table class="table">
                             <tbody>
                                 {% for assignment, submission in due_tomorrow.items %}
                                     <tr>
                                         <td>{{ assignment.assignment_name }}</td>
-                                        <td><small>{{ assignment.est_completion_time_min }} min</small></td>
+                                        {% if assignment.est_completion_time_min %}
+                                            <td><small class="nowrap">{{ assignment.est_completion_time_min }} min</small></td>
+                                        {% else %}
+                                            <td></td>
+                                        {% endif %}
                                         <td>{{ assignment.points }}P</td>
                                     </tr>
                                 {% endfor %}
@@ -62,7 +68,11 @@
                                 {% for assignment, submission in due_in_three_days.items %}
                                     <tr>
                                         <td>{{ assignment.assignment_name }}</td>
-                                        <td><small>{{ assignment.est_completion_time_min }} min</small></td>
+                                        {% if assignment.est_completion_time_min %}
+                                            <td><small>{{ assignment.est_completion_time_min }} min</small></td>
+                                        {% else %}
+                                            <td></td>
+                                        {% endif %}
                                         <td>{{ assignment.points }}P</td>
                                     </tr>
                                 {% endfor %}
@@ -72,15 +82,19 @@
                 </div>
             {% endif %}
             {% if due_in_a_week %}
-                <div class="card bg-success text-white">
+                <div class="card card-due-in-week">
                     <div class="card-body">
                         <h5 class="card-title">Due in a Week</h5>
-                        <table class="table text-white">
+                        <table class="table">
                             <tbody>
                                 {% for assignment, submission in due_in_a_week.items %}
                                     <tr>
                                         <td>{{ assignment.assignment_name }}</td>
-                                        <td><small>{{ assignment.est_completion_time_min }} min</small></td>
+                                        {% if assignment.est_completion_time_min %}
+                                            <td><small>{{ assignment.est_completion_time_min }} min</small></td>
+                                        {% else %}
+                                            <td></td>
+                                        {% endif %}
                                         <td>{{ assignment.points }}P</td>
                                     </tr>
                                 {% endfor %}

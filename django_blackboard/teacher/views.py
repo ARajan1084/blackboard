@@ -1,9 +1,7 @@
 import uuid
-from collections import OrderedDict
 from datetime import datetime
 from teacher.analysis import get_score_dist, get_score_hist, get_score_box, get_general_stats
 
-from student.utils import calculate_grade
 from django.shortcuts import render, redirect, reverse
 from django.contrib import messages
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
@@ -11,7 +9,7 @@ from django.utils import timezone
 
 from .forms import UserLoginForm, CreateAssignmentForm, Scores, CreateCategoryForm, EditCategoriesForm
 from .models import Teacher
-from board.models import Class, ClassAssignments, Course, Assignment, Category, ClassCategories
+from board.models import Class, ClassAssignments, Course, Assignment, Category, ClassCategories, Notification
 from student.models import ClassEnrollment, Student, Submission
 from .decorators import authentication_required
 from .utils import fetch_assignments_with_categories, fetch_gradesheet_data, fetch_raw_grades, fetch_category_breakdown
@@ -67,20 +65,20 @@ def gradesheet(request, class_id, active):
 
     category_breakdown = fetch_category_breakdown(klass, enrollments)
     category_data = [[]]
-    r = 0
-    c = 1
-    for category, category_scores in category_breakdown.items():
-        if category_scores:
-            category_dist = get_score_dist(category_scores)
-            category_box = get_score_box(category_scores)
-            category_stats = get_general_stats(category_scores, 100)
-            category_data[r].append((category, (category_dist, category_box, category_stats)))
-            if c == 3:
-                r += 1
-                category_data.append([])
-                c = 1
-            c += 1
-
+    if category_breakdown:
+        r = 0
+        c = 1
+        for category, category_scores in category_breakdown.items():
+            if category_scores:
+                category_dist = get_score_dist(category_scores)
+                category_box = get_score_box(category_scores)
+                category_stats = get_general_stats(category_scores, 100)
+                category_data[r].append((category, (category_dist, category_box, category_stats)))
+                if c == 3:
+                    r += 1
+                    category_data.append([])
+                    c = 1
+                c += 1
     context = {
         'active': active,
         'class_id': class_id,
@@ -115,7 +113,7 @@ def dashboard(request, class_id, active):
 def resources(request, class_id, active):
     klass = Class.objects.all().get(id=uuid.UUID(class_id).hex)
     course_name = Course.objects.all().get(course_id=klass.course_id).course_name
-    period = klass.period;
+    period = klass.period
     context = {
         'active': active,
         'class_id': class_id,
@@ -141,6 +139,7 @@ def discussions(request, class_id, active):
 
 @authentication_required
 def new_assignment(request, class_id):
+    teacher = Teacher.objects.all().get(user=request.user)
     klass = Class.objects.all().get(id=uuid.UUID(class_id))
     category_ids = ClassCategories.objects.all().filter(class_id=class_id)
     categories = []
@@ -167,18 +166,24 @@ def new_assignment(request, class_id):
                                     assigned=timezone.now(),
                                     est_completion_time_min=est_completion_time_min)
             enrollments = ClassEnrollment.objects.all().filter(class_id=class_id)
-            for enrollment in enrollments:
-                submission = Submission(assignment_id=str(assignment.id.hex),
-                                        enrollment_id=str(enrollment.id.hex))
-                student = Student.objects.all().get(student_id=enrollment.student_id)
-                if due:
-                    reminder = {'method': 'popup', 'minutes': 10}
-                    submission.cal_event_id = student.add_reminder(summary=name, start_date_time=due,
-                                                                   useDefault=False, override=reminder)
-                submission.save()
+            if 'assign' in request.POST:
+                for enrollment in enrollments:
+                    submission = Submission(assignment_id=str(assignment.id.hex),
+                                            enrollment_id=str(enrollment.id.hex))
+                    student = Student.objects.all().get(student_id=enrollment.student_id)
+                    message = teacher.pref_title + ' ' + teacher.last_name + ' posted a new assignment: ' + \
+                              assignment.assignment_name + ' due ' + str(assignment.due_date)
+                    url = reverse('student-class', kwargs={'element': 'dashboard', 'enrollment_id': str(enrollment.id.hex)})
+                    notification = Notification(recipient=student.user, message=message, link=url)
+                    notification.save()
+                    if due:
+                        reminder = {'method': 'popup', 'minutes': 10}
+                        submission.cal_event_id = student.add_reminder(summary=name, start_date_time=due,
+                                                                       useDefault=False, override=reminder)
+                    submission.save()
+                class_assignment = ClassAssignments(class_id=class_id, assignment_id=str(assignment.id.hex))
+                class_assignment.save()
             assignment.save()
-            class_assignment = ClassAssignments(class_id=class_id, assignment_id=str(assignment.id.hex))
-            class_assignment.save()
             return gradesheet(request, class_id, active='gradesheet')
         else:
             print(form.errors)
@@ -270,6 +275,13 @@ def assignment(request, class_id, assignment_id, edit):
                 submission = Submission.objects.all().get(enrollment_id=str(enrollment.id).replace('-', ''),
                                                           assignment_id=assignment_id)
                 if 'save' in request.POST:
+                    student = Student.objects.all().get(student_id=student_id)
+                    if submission.score != score:
+                        message = 'Scores for ' + assignment.assignment_name + ' have been updated.'
+                        url = reverse('student-class',
+                                      kwargs={'element': 'grades', 'enrollment_id': str(enrollment.id.hex)})
+                        notification = Notification(recipient=student.user, message=message, link=url)
+                        notification.save()
                     submission.score = score
                     submission.save()
                 elif 'delete' in request.POST:

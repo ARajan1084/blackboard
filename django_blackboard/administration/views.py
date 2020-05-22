@@ -11,9 +11,9 @@ from django.contrib.auth import authenticate, login as auth_login, logout as aut
 from django.contrib.auth.decorators import login_required
 from .forms import UserLoginForm, CreateStudentForm, UploadCSVForm, CreateTeacherForm, CreateCourseForm, CreateClassForm, EnrollStudentForm
 from .models import Administrator
-from student.models import Student, ClassEnrollment
+from student.models import Student, ClassEnrollment, Submission
 from teacher.models import Teacher
-from board.models import Course, Schedule, Class
+from board.models import Course, Schedule, Class, ClassAssignments
 from django.contrib.auth.models import User
 from django.contrib.staticfiles import finders
 import mimetypes
@@ -52,6 +52,12 @@ def enroll_student(request):
                 except ObjectDoesNotExist:
                     enrollment = ClassEnrollment(class_id=class_id, student_id=student.student_id)
                     enrollment.save(init_events=False)
+                    # creates submissions for the student in case student is being enrolled mid term
+                    assignment_refs = ClassAssignments.objects.all().filter(class_id=class_id)
+                    for assignment_ref in assignment_refs:
+                        submission = Submission(assignment_id=assignment_ref.assignment_id,
+                                                enrollment_id=str(enrollment.id.hex))
+                        submission.save()
                     num_students_enrolled += 1
                 except:
                     traceback.print_exc()
@@ -205,7 +211,8 @@ def add_teacher(request):
                         teacher = Teacher(user=None,
                                           first_name=row['first_name'],
                                           last_name=row['last_name'],
-                                          email_address=row['email_address'])
+                                          email_address=row['email_address'],
+                                          pref_title=row['pref_title'])
                         users.append(user_info)
                         teachers.append(teacher)
                     request.session['users'] = users
@@ -222,6 +229,7 @@ def add_teacher(request):
                 first_name = create_form.cleaned_data.get('first_name')
                 last_name = create_form.cleaned_data.get('last_name')
                 email_address = create_form.cleaned_data.get('email_address')
+                pref_title = create_form.cleaned_data.get('pref_title')
 
                 user_get_or_create = User.objects.get_or_create(username=username)
                 user = user_get_or_create[0]
@@ -231,7 +239,8 @@ def add_teacher(request):
                 teacher = Teacher(user=user,
                                   first_name=first_name,
                                   last_name=last_name,
-                                  email_address=email_address)
+                                  email_address=email_address,
+                                  pref_title=pref_title)
                 try:
                     teacher_get_or_create = Teacher.objects.get_or_create(user=user, email_address=teacher.email_address)
                     if not teacher_get_or_create[1]:

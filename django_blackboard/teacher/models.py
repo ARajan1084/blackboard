@@ -9,6 +9,7 @@ class Teacher(models.Model):
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
     id_picture = models.ImageField(upload_to='id_pictures', blank=True, default='id_pictures/default_pfp.png')
+    pref_title = models.CharField(max_length=5, default='Mr.')
     email_address = models.CharField(max_length=320)
 
     def __str__(self):

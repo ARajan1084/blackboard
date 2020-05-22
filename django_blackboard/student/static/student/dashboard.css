@@ -25,32 +25,6 @@
     border-top: 1px solid green;
 }
 
-.card-due-in-three-days {
-    border: 2px solid black !important;
-    border-radius: 10px !important;
-}
-
-.card-due-in-three-days td {
-    border-top: 1px solid black;
-}
-
-.card-upcoming-tests {
-    border: 2px solid black !important;
-    border-radius: 10px !important;
-}
-
-.card-upcoming-tests td {
-    border-top: 1px solid black;
-}
-
-.assignment-name {
-    width: 65%;
-}
-
-.est-completion-time {
-    width: 20%;
-}
-
-.points {
-    width: 15%;
+.nowrap {
+    white-space: nowrap;
 }
