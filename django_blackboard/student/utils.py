@@ -3,9 +3,25 @@ import decimal
 
 from django.utils import timezone
 
-from board.models import Category, Assignment, ClassAssignments, Class, Course
+from board.models import Category, Assignment, ClassAssignments, Class, Course, Discussion
 from teacher.models import Teacher
 from .models import Submission, ClassEnrollment
+from .forms import ThreadReplyForm
+
+
+def fetch_full_thread(indent, root):
+    form = ThreadReplyForm()
+    full_thread = []
+    full_thread.append((0, root))
+    form.add_field(str(root.id.hex))
+    replies = Discussion.objects.all().filter(reply_to=str(root.id.hex))
+    for reply in replies:
+        full_thread.append((indent, reply))
+        form.add_field(discussion_id=str(reply.id.hex))
+        replies_to_reply = Discussion.objects.all().filter(reply_to=str(reply.id.hex))
+        for reply_to_reply in replies_to_reply:
+            fetch_full_thread(indent + 50, reply_to_reply)
+    return full_thread, form
 
 
 def get_assignments(enrollment):
@@ -24,21 +40,28 @@ def fetch_relevant(submissions):
     due_in_a_week = {}
     for assignment, submission in list(submissions.items()):
         if assignment.due_date > timezone.now():
+            class_ref = ClassAssignments.objects.all().get(assignment_id=str(assignment.id.hex))
+            klass = Class.objects.all().get(id=uuid.UUID(class_ref.class_id))
+            course = Course.objects.all().get(course_id=klass.course_id)
             category = Category.objects.all().get(id=uuid.UUID(assignment.category_id).hex)
             if ('Test' in category.category_name) or ('Quiz' in category.category_name):
-                tests.update({assignment: submissions.pop(assignment)})
+                tests.update({(assignment, course): submissions.pop(assignment)})
             elif submission.score is None:
                 due_date = assignment.due_date
                 current_date = timezone.now()
                 delta = due_date - current_date
                 if delta.days <= 1:
-                    due_tomorrow.update({assignment: submissions.pop(assignment)})
+                    due_tomorrow.update({(assignment, course): submissions.pop(assignment)})
                 elif delta.days <= 3:
-                    due_in_three_days.update({assignment: submissions.pop(assignment)})
+                    due_in_three_days.update({(assignment, course): submissions.pop(assignment)})
                 elif delta.days <= 8:
-                    due_in_a_week.update({assignment: submissions.pop(assignment)})
+                    due_in_a_week.update({(assignment, course): submissions.pop(assignment)})
         elif submission.score == 0:
-            late.update({assignment: submissions.pop(assignment)})
+            class_ref = ClassAssignments.objects.all().get(assignment_id=str(assignment.id.hex))
+            klass = Class.objects.all().get(id=uuid.UUID(class_ref.class_id))
+            course = Course.objects.all().get(course_id=klass.course_id)
+            teacher = Teacher.objects.all().get(id=uuid.UUID(klass.teacher_id))
+            late.update({(assignment, course, teacher): submissions.pop(assignment)})
         else:
             submissions.pop(assignment)
 
@@ -81,15 +104,15 @@ def get_class_data(enrollments):
             class_assignments.append(assignment)
 
         grade = calculate_grade(class_assignments, str(enrollment.id.hex), klass.weighted)
-        class_data.append(
-            [klass.period,
-             course.course_name,
-             teacher.first_name + ' ' + teacher.last_name,
-             grade,
-             [],
-             str(enrollment.id).replace('-', '')]
-        )
-    class_data.sort(key=(lambda a: a[0]))
+        class_data.append({
+            'period': klass.period,
+            'course_name': course.course_name,
+            'teacher_name': teacher.first_name + ' ' + teacher.last_name,
+            'teacher_email': teacher.email_address,
+            'grade': grade,
+            'enrollment_id': str(enrollment.id.hex)
+        })
+    class_data.sort(key=(lambda klass: klass['period']))
     return class_data
 
 

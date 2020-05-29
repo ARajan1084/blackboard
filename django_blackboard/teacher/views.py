@@ -9,10 +9,10 @@ from django.utils import timezone
 
 from .forms import UserLoginForm, CreateAssignmentForm, Scores, CreateCategoryForm, EditCategoriesForm
 from .models import Teacher
-from board.models import Class, ClassAssignments, Course, Assignment, Category, ClassCategories, Notification
+from board.models import Class, ClassAssignments, Course, Assignment, Category, ClassCategories, Notification, Discussion, ClassDiscussions
 from student.models import ClassEnrollment, Student, Submission
 from .decorators import authentication_required
-from .utils import fetch_assignments_with_categories, fetch_gradesheet_data, fetch_raw_grades, fetch_category_breakdown
+from .utils import fetch_assignments_with_categories, fetch_gradesheet_data, fetch_raw_grades, fetch_category_breakdown, fetch_full_thread
 
 
 @authentication_required
@@ -126,15 +126,38 @@ def resources(request, class_id, active):
 @authentication_required
 def discussions(request, class_id, active):
     klass = Class.objects.all().get(id=uuid.UUID(class_id).hex)
+    discussion_refs = ClassDiscussions.objects.all().filter(class_id=class_id)
+    discussions = []
+    for discussion_ref in discussion_refs:
+        discussion = Discussion.objects.all().get(id=uuid.UUID(discussion_ref.discussion_id))
+        discussions.append(discussion)
     course_name = Course.objects.all().get(course_id=klass.course_id).course_name
     period = klass.period
     context = {
         'active': active,
         'class_id': class_id,
         'period': period,
-        'course_name': course_name
+        'course_name': course_name,
+        'discussions': discussions
     }
     return render(request, 'teacher/discussions.html', context)
+
+
+def thread(request, class_id, discussion_id):
+    klass = Class.objects.all().get(id=uuid.UUID(class_id).hex)
+    course_name = Course.objects.all().get(course_id=klass.course_id).course_name
+
+    root = Discussion.objects.all().get(id=uuid.UUID(discussion_id))
+    full_thread = fetch_full_thread(0, root)
+
+    context = {
+        'active': 'discussions',
+        'class_id': class_id,
+        'course_name': course_name,
+        'period': klass.period,
+        'root': root
+    }
+    return render(request, 'teacher/thread.html', context)
 
 
 @authentication_required
@@ -157,6 +180,7 @@ def new_assignment(request, class_id):
             due_date = form.cleaned_data.get('due_date')
             due_time = form.cleaned_data.get('due_time')
             est_completion_time_min = form.cleaned_data.get('est_completion_time_min')
+            create_discussion_thread = form.cleaned_data.get('create_discussion_thread')
             due = datetime.combine(due_date, due_time)
             assignment = Assignment(assignment_name=name,
                                     assignment_description=description,
@@ -170,6 +194,7 @@ def new_assignment(request, class_id):
                 for enrollment in enrollments:
                     submission = Submission(assignment_id=str(assignment.id.hex),
                                             enrollment_id=str(enrollment.id.hex))
+                    # creates notifications for students in the class
                     student = Student.objects.all().get(student_id=enrollment.student_id)
                     message = teacher.pref_title + ' ' + teacher.last_name + ' posted a new assignment: ' + \
                               assignment.assignment_name + ' due ' + str(assignment.due_date)
@@ -183,6 +208,13 @@ def new_assignment(request, class_id):
                     submission.save()
                 class_assignment = ClassAssignments(class_id=class_id, assignment_id=str(assignment.id.hex))
                 class_assignment.save()
+                if create_discussion_thread:
+                    title = assignment.assignment_name + ': Discussion Thread'
+                    message = 'This is the official discussion thread for ' + assignment.assignment_name + '!'
+                    discussion = Discussion(is_root=True, title=title, message=message, reply_to=None)
+                    discussion.save()
+                    class_discussion = ClassDiscussions(class_id=class_id, discussion_id=str(discussion.id.hex))
+                    class_discussion.save()
             assignment.save()
             return gradesheet(request, class_id, active='gradesheet')
         else:

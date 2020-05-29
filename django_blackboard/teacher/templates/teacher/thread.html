@@ -1,0 +1,18 @@
+{% extends 'teacher/class.html' %}
+{% load teacher_extras %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block css %}{% endblock %}
+{% block title %}P{{ period }}: {{ root.title }}{% endblock %}
+
+{% block content %}
+    <h3 class="pt-3">{{ root.title }}</h3>
+    <p>{{ root.message }}</p>
+    {% for element in full_thread %}
+        <div style="text-indent: {{ element.0 }}px">
+            <p>{{ element.1.message }}</p><br>
+            {{ form|get_thread_field:element.1.id|uuid_to_str }}
+        </div>
+    {% endfor %}
+{% endblock %}

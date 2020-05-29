@@ -1,18 +1,15 @@
-import csv
-import decimal
 import uuid
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
-from django.urls import reverse
 from django.utils import timezone
 
 from .forms import UserLoginForm
-from django.contrib.auth.decorators import login_required
 from .models import Student, ClassEnrollment, Submission
-from board.models import Course, Class, ClassAssignments, Assignment, Category, ClassCategories, Schedule, Notification
+from board.models import Course, Class, ClassAssignments, Assignment, Category, ClassCategories, Schedule, Notification, \
+    ClassDiscussions, Discussion
 from .utils import calculate_grade, get_student_submissions, get_enrollments, get_class_data, \
-    fetch_relevant, calculate_workload, get_assignments
+    fetch_relevant, calculate_workload, get_assignments, fetch_full_thread
 from .decorators import authentication_required
 
 
@@ -116,13 +113,44 @@ def discussions(request, enrollment_id, active):
     klass = Class.objects.all().get(id=uuid.UUID(enrollment.class_id).hex)
     course = Course.objects.all().get(course_id=klass.course_id)
     period = klass.period
+
+    discussion_refs = ClassDiscussions.objects.all().filter(class_id=str(klass.id.hex))
+    discussions = []
+    for discussion_ref in discussion_refs:
+        discussion = Discussion.objects.all().get(id=uuid.UUID(discussion_ref.discussion_id))
+        discussions.append(discussion)
+
     context = {
         'period': period,
         'course': course,
         'enrollment_id': enrollment_id,
-        'active': active
+        'active': active,
+        'discussions': discussions
     }
     return render(request, 'student/discussions.html', context)
+
+
+def thread(request, enrollment_id, discussion_id):
+    enrollment = ClassEnrollment.objects.all().get(id=uuid.UUID(enrollment_id).hex)
+    klass = Class.objects.all().get(id=uuid.UUID(enrollment.class_id).hex)
+    course = Course.objects.all().get(course_id=klass.course_id)
+
+    root = Discussion.objects.all().get(id=uuid.UUID(discussion_id))
+    full_thread_w_form = fetch_full_thread(0, root)
+    full_thread = full_thread_w_form[0]
+    form = full_thread_w_form[1]
+    print(full_thread_w_form)
+
+    context = {
+        'active': 'discussions',
+        'enrollment_id': enrollment_id,
+        'course': course,
+        'period': klass.period,
+        'root': root,
+        'full_thread': full_thread,
+        'form': form
+    }
+    return render(request, 'student/thread.html', context)
 
 
 @authentication_required
@@ -149,6 +177,7 @@ def home(request):
         class_workloads.update({course: calculate_workload((enrollment, ))})
 
     context = {
+        'student': student,
         'request': request,
         'notifications': notifications,
         'class_data': class_data,

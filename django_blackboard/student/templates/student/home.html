@@ -16,23 +16,27 @@
                 <table class="table table-striped">
                     <thead class="">
                         <tr>
-                            <th style="width: 40px">P</th>
+                            <th class="class-period text-center">P</th>
                             <th>Class</th>
                             <th class = "text-center" style="width: 150px">Grade</th>
-                            <th style="width: 200px">Teacher</th>
+                            <th class="class-teacher">Teacher</th>
+                            <th class="class-mailto"></th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for class in class_data %}
                         <tr>
-                            <td>{{ class.0 }}</td>
-                            <td><a href="{% url 'student-class' element='grades' enrollment_id=class.5 %}">{{ class.1 }}</a></td>
-                            {% if class.3 is None %}
-                                <td class="text-center"><small>N/A</small></td>
+                            <td class="text-center align-middle">{{ class.period }}</td>
+                            <td class="align-middle"><a href="{% url 'student-class' element='grades' enrollment_id=class.enrollment_id %}">{{ class.course_name }}</a></td>
+                            {% if class.grade is None %}
+                                <td class="text-center align-middle"><small>N/A</small></td>
                             {% else %}
-                                <td class="text-center">{{ class.3.0 }} ({{ class.3.1|floatformat:2 }}%)</td>
+                                <td class="text-center align-middle">{{ class.grade.0 }} ({{ class.grade.1|floatformat:2 }}%)</td>
                             {% endif %}
-                            <td>{{ class.2 }}</td>
+                            <td class="align-middle">{{ class.teacher_name }}</td>
+                            <td><button class="btn" onclick="location.href='mailto:{{ class.teacher_email }}'">
+                                <i class="fa fa-mail-bulk"></i>
+                            </button></td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -61,16 +65,19 @@
                             <h5 class="card-title">Late/Missing</h5>
                             <table class="table mb-0">
                                 <tbody>
-                                    {% for assignment, submission in late.items %}
+                                    {% for assignment_details, submission in late.items %}
                                         <tr>
-                                            <td class="assignment-name">{{ assignment.assignment_name }}</td>
-                                            {% if assignment.est_completion_time_min %}
-                                                <td class="est-completion-time"><small>{{ assignment.est_completion_time_min }} min</small></td>
+                                            <td class="assignment-name align-middle">
+                                                <small class="text-muted">{{ assignment_details.1.course_name }}</small><br>
+                                                {{ assignment_details.0.assignment_name }}</td>
+                                            {% if assignment_details.0.est_completion_time_min %}
+                                                <td class="est-completion-time align-middle"><small>{{ assignment_details.0.est_completion_time_min }} min</small></td>
                                             {% else %}
-                                                <td class="est-completion-time"></td>
+                                                <td class="est-completion-time align-middle"></td>
                                             {% endif %}
-                                            <td class="points">{{ assignment.points }}P</td>
-                                            <td><button><i class="fa fa-shopping-cart"></i></button></td>
+                                            <td class="points align-middle">{{ assignment_details.0.points }}P</td>
+                                            <td><button class="btn" onclick="location.href='mailto:{{ assignment_details.2.email_address }}?subject={{ assignment_details.0.assignment_name }}'">
+                                                <i class="fa fa-mail-bulk"></i></button></td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>
@@ -84,15 +91,17 @@
                             <h5 class="card-title">Due Tomorrow</h5>
                             <table class="table mb-0">
                                 <tbody>
-                                    {% for assignment, submission in due_tomorrow.items %}
+                                    {% for assignment_course, submission in due_tomorrow.items %}
                                         <tr>
-                                            <td class="assignment-name">{{ assignment.assignment_name }}</td>
-                                            {% if assignment.est_completion_time_min %}
-                                                <td class="est-completion-time"><small>{{ assignment.est_completion_time_min }} min</small></td>
+                                            <td class="assignment-name align-middle">
+                                                <small class="text-muted">{{ assignment_course.1.course_name }}</small><br>
+                                                {{ assignment_course.0.assignment_name }}</td>
+                                            {% if assignment_course.0.est_completion_time_min %}
+                                                <td class="est-completion-time align-middle"><small>{{ assignment_course.0.est_completion_time_min }} min</small></td>
                                             {% else %}
                                                 <td class="est-completion-time"></td>
                                             {% endif %}
-                                            <td class="points">{{ assignment.points }}P</td>
+                                            <td class="points align-middle">{{ assignment_course.0.points }}P</td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>
@@ -106,15 +115,17 @@
                             <h5 class="card-title">Due in 3 Days</h5>
                             <table class="table mb-0">
                                 <tbody>
-                                    {% for assignment, submission in due_in_three_days.items %}
+                                    {% for assignment_course, submission in due_in_three_days.items %}
                                         <tr>
-                                            <td class="assignment-name">{{ assignment.assignment_name }}</td>
-                                            {% if assignment.est_completion_time_min %}
-                                                <td class="est-completion-time"><small>{{ assignment.est_completion_time_min }} min</small></td>
+                                            <td class="assignment-name align-middle">
+                                                <small class="text-muted">{{ assignment_course.1.course_name }}</small><br>
+                                                {{ assignment_course.0.assignment_name }}</td>
+                                            {% if assignment_course.0.est_completion_time_min %}
+                                                <td class="est-completion-time align-middle"><small>{{ assignment_course.0.est_completion_time_min }} min</small></td>
                                             {% else %}
                                                 <td class="est-completion-time"></td>
                                             {% endif %}
-                                            <td class="points">{{ assignment.points }}P</td>
+                                            <td class="points align-middle">{{ assignment_course.0.points }}P</td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>
@@ -128,15 +139,17 @@
                             <h5 class="card-title">Due in a Week</h5>
                             <table class="table mb-0">
                                 <tbody>
-                                    {% for assignment, submission in due_in_a_week.items %}
+                                    {% for assignment_course, submission in due_in_a_week.items %}
                                         <tr>
-                                            <td class="assignment-name">{{ assignment.assignment_name }}</td>
-                                            {% if assignment.est_completion_time_min %}
-                                                <td class="est-completion-time"><small>{{ assignment.est_completion_time_min }} min</small></td>
+                                            <td class="assignment-name">
+                                                <small class="text-muted">{{ assignment_course.1.course_name }}</small><br>
+                                                {{ assignment_course.0.assignment_name }}</td>
+                                            {% if assignment_course.0.est_completion_time_min %}
+                                                <td class="est-completion-time"><small>{{ assignment_course.0.est_completion_time_min }} min</small></td>
                                             {% else %}
                                                 <td class="est-completion-time"></td>
                                             {% endif %}
-                                            <td class="points">{{ assignment.points }}P</td>
+                                            <td class="points align-middle">{{ assignment_course.0.points }}P</td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>
@@ -150,11 +163,13 @@
                             <h5 class="card-title">Upcoming Tests</h5>
                             <table class="table mb-0">
                                 <tbody>
-                                    {% for assignment, submission in tests.items %}
+                                    {% for assignment_course, submission in tests.items %}
                                         <tr>
-                                            <td class="assignment-name">{{ assignment.assignment_name }}</td>
+                                            <td class="assignment-name">
+                                                <small class="text-muted">{{ assignment_course.1.course_name }}</small><br>
+                                                {{ assignment_course.0.assignment_name }}</td>
                                             <td class="est-completion-time"></td>
-                                            <td class="points">{{ assignment.points }}P</td>
+                                            <td class="points align-middle">{{ assignment_course.0.points }}P</td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>

@@ -40,3 +40,8 @@ def get_item(dict, key):
 def get_element(list, index):
     if list:
         return list[index]
+
+
+@register.filter
+def get_thread_field(form, discussion_id):
+    return form[discussion_id + '_message'], form[discussion_id + '_media']

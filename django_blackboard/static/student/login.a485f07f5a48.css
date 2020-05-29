@@ -1,0 +1,39 @@
+body {
+	line-height: 1.5em;
+	font-family: chalkduster;
+}
+
+.input {
+	background-color: transparent;
+	border: dashed white;
+	border-radius: 5px;
+	margin-bottom: 10px;
+	box-sizing: border-box;
+	color: white;
+	font-family: chalkduster, serif;
+	padding: 7px;
+	width: 70%;
+}
+
+
+.login-panel {
+	width: 40%;
+	color: white;
+	margin: auto;
+	padding-top: 20%;
+}
+
+.button {
+	background-color: transparent;
+	border: dashed white;
+	border-radius: 5px;
+	margin-bottom: 10px;
+	box-sizing: border-box;
+	color: white;
+	font-family: chalkduster;
+	padding: 7px;
+}
+.error {
+	white-space: pre;
+}
+

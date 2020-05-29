@@ -1,8 +1,18 @@
 {% extends 'student/class.html' %}
+{% load student_extras %}
 {% load static %}
 
 {% block css %}{% endblock %}
 {% block title %}P{{ period }}: Discussions{% endblock %}
 
 {% block content %}
+    <ul class="list-group pt-2">
+        {% for discussion in discussions %}
+            <li class="list-group-item">
+                <h5><a href="{% url 'student-thread' enrollment_id=enrollment_id discussion_id=discussion.id|uuid_to_str %}">
+                     {{ discussion.title }}</a></h5>
+                <p>{{ discussion.message }}</p>
+            </li>
+        {% endfor %}
+    </ul>
 {% endblock %}

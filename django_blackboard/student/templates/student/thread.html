@@ -1,0 +1,25 @@
+{% extends 'student/class.html' %}
+{% load student_extras %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block css %}
+    <link rel="stylesheet" href="{% static 'student/thread.css' %}">{% endblock %}
+{% block title %}P{{ period }}: {{ root.title }}{% endblock %}
+
+{% block content %}
+    {% for element in full_thread %}
+        <div style="margin-left: {{ element.0 }}px !important;">
+            <h3 class="pt-3">{{ element.1.title }}</h3>
+            <p>{{ element.1.message }}</p><br>
+            <div style="margin-left: {{ element.0|add:50 }}px !important;">
+                {% with discussion_id=element.1.id|uuid_to_str %}
+                    {% with form_fields=form|get_thread_field:discussion_id %}
+                        {{ form_fields.0|add_class:'form-control' }}
+                        {{ form_fields.1|add_class:'float-right' }}
+                    {% endwith %}
+                {% endwith %}
+            </div>
+        </div>
+    {% endfor %}
+{% endblock %}

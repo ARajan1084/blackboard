@@ -16,3 +16,13 @@ def percent(decimal):
 @register.filter
 def firm_url(relative, request):
     return request.build_absolute_uri(relative)
+
+
+@register.filter
+def uuid_to_str(uuid):
+    return str(uuid).replace('-', '')
+
+
+@register.filter
+def get_thread_field(form, discussion_id):
+    return form[discussion_id + '_message'], form[discussion_id + '_media']

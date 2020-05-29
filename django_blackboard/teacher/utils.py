@@ -2,8 +2,19 @@ import uuid
 from collections import OrderedDict
 
 from student.models import Student, Submission
-from board.models import ClassAssignments, Assignment, Category, ClassCategories
+from board.models import ClassAssignments, Assignment, Category, ClassCategories, Discussion
 from student.utils import calculate_grade
+
+
+def fetch_full_thread(indent, root):
+    full_thread = []
+    replies = Discussion.objects.all().filter(reply_to=str(root.id.hex))
+    for reply in replies:
+        full_thread.append((indent, reply))
+        replies_to_reply = Discussion.objects.all().filter(reply_to=str(reply.id.hex))
+        for reply_to_reply in replies_to_reply:
+            fetch_full_thread(indent+1, reply_to_reply)
+    return full_thread
 
 
 def fetch_category_breakdown(klass, enrollments):
