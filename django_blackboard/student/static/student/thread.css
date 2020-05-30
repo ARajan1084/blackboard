@@ -1,3 +1,11 @@
 .form-control {
     text-indent: inherit;
 }
+
+input[type='file'] {
+    display: none;
+}
+
+.reply-message {
+    width: 80% !important;
+}

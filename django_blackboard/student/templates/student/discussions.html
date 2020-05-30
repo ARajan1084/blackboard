@@ -6,12 +6,18 @@
 {% block title %}P{{ period }}: Discussions{% endblock %}
 
 {% block content %}
+    <div class="row pt-2">
+        <div class="col">
+            <button class="btn btn-outline-primary float-right" onclick="location.href='{% url 'student-new-thread' enrollment_id %}'"><i class="fa fa-comments"></i></button>
+        </div>
+    </div>
     <ul class="list-group pt-2">
         {% for discussion in discussions %}
             <li class="list-group-item">
-                <h5><a href="{% url 'student-thread' enrollment_id=enrollment_id discussion_id=discussion.id|uuid_to_str %}">
-                     {{ discussion.title }}</a></h5>
-                <p>{{ discussion.message }}</p>
+                <small class="text-muted">{{ discussion.0 }} - {{ discussion.1.date_posted }}</small>
+                <h5 class="pt-1"><a href="{% url 'student-thread' enrollment_id=enrollment_id discussion_id=discussion.1.id|uuid_to_str %}">
+                     {{ discussion.1.title }}</a></h5>
+                <p>{{ discussion.1.message }}</p>
             </li>
         {% endfor %}
     </ul>

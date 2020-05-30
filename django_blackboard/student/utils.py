@@ -3,25 +3,61 @@ import decimal
 
 from django.utils import timezone
 
-from board.models import Category, Assignment, ClassAssignments, Class, Course, Discussion
+from board.models import Category, Assignment, ClassAssignments, Class, Course, Discussion, ClassDiscussions
 from teacher.models import Teacher
-from .models import Submission, ClassEnrollment
+from .models import Submission, ClassEnrollment, Student
 from .forms import ThreadReplyForm
 
 
-def fetch_full_thread(indent, root):
-    form = ThreadReplyForm()
-    full_thread = []
-    full_thread.append((0, root))
-    form.add_field(str(root.id.hex))
+def fetch_class_discussions(class_id):
+    discussion_refs = ClassDiscussions.objects.all().filter(class_id=class_id)
+    discussions = []
+    for discussion_ref in discussion_refs:
+        discussion = Discussion.objects.all().get(id=uuid.UUID(discussion_ref.discussion_id))
+        name = fetch_name(discussion.user)
+        discussions.append((name, discussion))
+    discussions.sort(reverse=True, key=lambda i: i[1].date_posted)
+    return discussions
+
+
+def fetch_full_thread(indent, root, full_thread, all_discussions):
+    if not all_discussions:
+        all_discussions = [root]
+    else:
+        all_discussions.append(root)
+    if not full_thread:
+        full_thread = [(indent, (root, fetch_name(root.user)))]
+    else:
+        full_thread.append((indent, (root, fetch_name(root.user))))
     replies = Discussion.objects.all().filter(reply_to=str(root.id.hex))
     for reply in replies:
-        full_thread.append((indent, reply))
-        form.add_field(discussion_id=str(reply.id.hex))
-        replies_to_reply = Discussion.objects.all().filter(reply_to=str(reply.id.hex))
-        for reply_to_reply in replies_to_reply:
-            fetch_full_thread(indent + 50, reply_to_reply)
-    return full_thread, form
+        fetch_full_thread(indent + 50, reply, full_thread, all_discussions)
+    return full_thread, ThreadReplyForm(discussions=all_discussions)
+
+
+def fetch_all_discussions(root, all_discussions):
+    if not all_discussions:
+        all_discussions = [root]
+    else:
+        all_discussions.append(root)
+    replies = Discussion.objects.all().filter(reply_to=str(root.id.hex))
+    for reply in replies:
+        fetch_all_discussions(reply, all_discussions)
+    return all_discussions
+
+
+def fetch_name(user):
+    try:
+        student = Student.objects.all().get(user=user)
+        return student.first_name + ' ' + student.last_name
+    except:
+        pass
+    try:
+        teacher = Teacher.objects.all().get(user=user)
+        return teacher.first_name + ' ' + teacher.last_name
+    except:
+        pass
+    return None
 
 
 def get_assignments(enrollment):

@@ -25,6 +25,20 @@
     border-top: 1px solid green;
 }
 
-.nowrap {
-    white-space: nowrap;
+.card-due-in-three-days {
+    border: 2px solid black !important;
+    border-radius: 10px !important;
+}
+
+.card-due-in-three-days td {
+    border-top: 1px solid black;
+}
+
+.card-upcoming-tests {
+    border: 2px solid black !important;
+    border-radius: 10px !important;
+}
+
+.card-upcoming-tests td {
+    border-top: 1px solid black;
 }

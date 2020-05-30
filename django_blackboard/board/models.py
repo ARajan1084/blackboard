@@ -10,7 +10,7 @@ class Discussion(models.Model):
     title = models.CharField(max_length=100, unique=False, null=True)
     message = models.TextField(max_length=200, unique=False)
     attached_media = models.FileField(null=True, unique=False, default=None)
-    user_id = models.CharField(max_length=36, unique=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     reply_to = models.CharField(max_length=36, null=True, unique=False)
     date_posted = models.DateTimeField(auto_now_add=True)
 

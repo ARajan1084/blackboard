@@ -60,20 +60,20 @@
                 </div>
             {% endif %}
             {% if due_in_three_days %}
-                <div class="card bg-success text-white">
+                <div class="card card-due-in-three-days">
                     <div class="card-body">
                         <h5 class="card-title">Due in 3 Days</h5>
-                        <table class="table text-white">
+                        <table class="table">
                             <tbody>
-                                {% for assignment, submission in due_in_three_days.items %}
+                                {% for assignment_details, submission in due_in_three_days.items %}
                                     <tr>
-                                        <td>{{ assignment.assignment_name }}</td>
-                                        {% if assignment.est_completion_time_min %}
-                                            <td><small>{{ assignment.est_completion_time_min }} min</small></td>
+                                        <td>{{ assignment_details.0.assignment_name }}</td>
+                                        {% if assignment_details.0.est_completion_time_min %}
+                                            <td><small>{{ assignment_details.0.est_completion_time_min }} min</small></td>
                                         {% else %}
                                             <td></td>
                                         {% endif %}
-                                        <td>{{ assignment.points }}P</td>
+                                        <td>{{ assignment_details.0.points }}P</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>

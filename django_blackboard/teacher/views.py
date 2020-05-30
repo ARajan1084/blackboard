@@ -211,7 +211,7 @@ def new_assignment(request, class_id):
                 if create_discussion_thread:
                     title = assignment.assignment_name + ': Discussion Thread'
                     message = 'This is the official discussion thread for ' + assignment.assignment_name + '!'
-                    discussion = Discussion(is_root=True, title=title, message=message, reply_to=None)
+                    discussion = Discussion(is_root=True, title=title, message=message, reply_to=None, user=teacher.user)
                     discussion.save()
                     class_discussion = ClassDiscussions(class_id=class_id, discussion_id=str(discussion.id.hex))
                     class_discussion.save()

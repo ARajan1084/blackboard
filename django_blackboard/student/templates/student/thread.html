@@ -4,21 +4,33 @@
 {% load widget_tweaks %}
 
 {% block css %}
-    <link rel="stylesheet" href="{% static 'student/thread.css' %}">{% endblock %}
+    <link rel="stylesheet" href="{% static 'student/thread.css' %}">
+{% endblock %}
 {% block title %}P{{ period }}: {{ root.title }}{% endblock %}
 
 {% block content %}
+    {% for error in form.errors %}
+        {{ error|add_class:'alert-danger' }}
+    {% endfor %}
+    <div style="height: 30px"></div>
     {% for element in full_thread %}
         <div style="margin-left: {{ element.0 }}px !important;">
-            <h3 class="pt-3">{{ element.1.title }}</h3>
-            <p>{{ element.1.message }}</p><br>
-            <div style="margin-left: {{ element.0|add:50 }}px !important;">
-                {% with discussion_id=element.1.id|uuid_to_str %}
-                    {% with form_fields=form|get_thread_field:discussion_id %}
-                        {{ form_fields.0|add_class:'form-control' }}
-                        {{ form_fields.1|add_class:'float-right' }}
+            <small class="text-muted">{{ element.1.1 }} - {{ element.1.0.date_posted }}</small>
+            {% if element.1.0.title %}
+                <h3>{{ element.1.0.title }}</h3>
+            {% endif %}
+            <p>{{ element.1.0.message }}</p>
+            <div style="margin-left: 50px !important;">
+                <form method="post" class="form-inline">
+                    {% csrf_token %}
+                    {% with discussion_id=element.1.0.id|uuid_to_str %}
+                        {% with form_fields=form|get_thread_field:discussion_id %}
+                            {{ form_fields.0|add_class:'form-control reply-message' }}
+                            <button class="btn btn-light file-upload"><i class="fa fa-paperclip"></i>{{ form_fields.1|add_class:'float-right file-upload' }}</button>
+                            <button class="btn btn-outline-primary float-right" type="submit" name="reply">Reply</button>
+                        {% endwith %}
                     {% endwith %}
-                {% endwith %}
+                </form>
             </div>
         </div>
     {% endfor %}
