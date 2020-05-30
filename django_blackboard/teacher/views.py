@@ -7,12 +7,14 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.utils import timezone
 
-from .forms import UserLoginForm, CreateAssignmentForm, Scores, CreateCategoryForm, EditCategoriesForm
+from .forms import UserLoginForm, CreateAssignmentForm, Scores, CreateCategoryForm, EditCategoriesForm, ThreadReplyForm, \
+    NewThreadForm
 from .models import Teacher
 from board.models import Class, ClassAssignments, Course, Assignment, Category, ClassCategories, Notification, Discussion, ClassDiscussions
 from student.models import ClassEnrollment, Student, Submission
 from .decorators import authentication_required
-from .utils import fetch_assignments_with_categories, fetch_gradesheet_data, fetch_raw_grades, fetch_category_breakdown, fetch_full_thread
+from .utils import fetch_assignments_with_categories, fetch_gradesheet_data, fetch_raw_grades, fetch_category_breakdown, \
+    fetch_full_thread, fetch_class_discussions, fetch_all_discussions
 
 
 @authentication_required
@@ -126,13 +128,10 @@ def resources(request, class_id, active):
 @authentication_required
 def discussions(request, class_id, active):
     klass = Class.objects.all().get(id=uuid.UUID(class_id).hex)
-    discussion_refs = ClassDiscussions.objects.all().filter(class_id=class_id)
-    discussions = []
-    for discussion_ref in discussion_refs:
-        discussion = Discussion.objects.all().get(id=uuid.UUID(discussion_ref.discussion_id))
-        discussions.append(discussion)
+    discussions = fetch_class_discussions(str(klass.id.hex))
     course_name = Course.objects.all().get(course_id=klass.course_id).course_name
     period = klass.period
+
     context = {
         'active': active,
         'class_id': class_id,
@@ -143,21 +142,75 @@ def discussions(request, class_id, active):
     return render(request, 'teacher/discussions.html', context)
 
 
+@authentication_required
 def thread(request, class_id, discussion_id):
+    root = Discussion.objects.all().get(id=uuid.UUID(discussion_id))
+    if request.method == 'POST':
+        all_discussions = fetch_all_discussions(root, all_discussions=None)
+        form = ThreadReplyForm(discussions=all_discussions, data=request.POST)
+        if form.is_valid():
+            discussions = {}
+            for key, value in form.cleaned_data.items():
+                if value:
+                    key_split = key.split('_')
+                    reply = discussions.get(key_split[0])
+                    if not reply:
+                        reply = Discussion(user=request.user, reply_to=key_split[0], is_root=False)
+                    if key_split[1] == 'message':
+                        reply.message = value
+                    elif key_split[1] == 'media':
+                        reply.attached_media = value
+                    discussions.update({key_split[0]: reply})
+            for disc_id, discussion in discussions.items():
+                discussion.save()
+            return redirect('teacher-discussion', class_id, discussion_id)
+
     klass = Class.objects.all().get(id=uuid.UUID(class_id).hex)
     course_name = Course.objects.all().get(course_id=klass.course_id).course_name
 
-    root = Discussion.objects.all().get(id=uuid.UUID(discussion_id))
-    full_thread = fetch_full_thread(0, root)
+    full_thread_w_form = fetch_full_thread(0, root, None, None)
+    full_thread = full_thread_w_form[0]
+    form = full_thread_w_form[1]
 
     context = {
         'active': 'discussions',
         'class_id': class_id,
         'course_name': course_name,
         'period': klass.period,
-        'root': root
+        'root': root,
+        'full_thread': full_thread,
+        'form': form
     }
     return render(request, 'teacher/thread.html', context)
+
+
+@authentication_required
+def new_thread(request, class_id):
+    klass = Class.objects.all().get(id=uuid.UUID(class_id).hex)
+
+    if request.method == 'POST':
+        form = NewThreadForm(request.POST)
+        if form.is_valid():
+            title = form.cleaned_data.get('title')
+            message = form.cleaned_data.get('message')
+            media = form.cleaned_data.get('media')
+            discussion = Discussion(is_root=True, title=title, message=message, user=request.user, attached_media=media)
+            discussion.save()
+            class_discussion = ClassDiscussions(class_id=str(klass.id.hex), discussion_id=str(discussion.id.hex))
+            class_discussion.save()
+        return redirect('teacher-class', class_id=class_id, element='discussions')
+
+    course = Course.objects.all().get(course_id=klass.course_id)
+    form = NewThreadForm()
+
+    context = {
+        'active': 'discussions',
+        'class_id': class_id,
+        'course_name': course.course_name,
+        'period': klass.period,
+        'form': form
+    }
+    return render(request, 'teacher/new_thread.html', context)
 
 
 @authentication_required

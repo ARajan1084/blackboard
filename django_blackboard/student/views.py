@@ -113,11 +113,10 @@ def discussions(request, enrollment_id, active):
     enrollment = ClassEnrollment.objects.all().get(id=uuid.UUID(enrollment_id).hex)
     klass = Class.objects.all().get(id=uuid.UUID(enrollment.class_id).hex)
     course = Course.objects.all().get(course_id=klass.course_id)
-    period = klass.period
     discussions = fetch_class_discussions(str(klass.id.hex))
 
     context = {
-        'period': period,
+        'period': klass.period,
         'course': course,
         'enrollment_id': enrollment_id,
         'active': active,
@@ -133,8 +132,6 @@ def thread(request, enrollment_id, discussion_id):
         form = ThreadReplyForm(discussions=all_discussions, data=request.POST)
         if form.is_valid():
             discussions = {}
-            print(form.fields)
-            print(form.cleaned_data.items())
             for key, value in form.cleaned_data.items():
                 if value:
                     key_split = key.split('_')
