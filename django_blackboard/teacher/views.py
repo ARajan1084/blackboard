@@ -1,5 +1,9 @@
+import mimetypes
 import uuid
 from datetime import datetime
+
+from django.http import HttpResponse
+
 from teacher.analysis import get_score_dist, get_score_hist, get_score_box, get_general_stats
 
 from django.shortcuts import render, redirect, reverse
@@ -437,6 +441,17 @@ def get_student_scores(assignment_id):
                                                         assignment_id=assignment_id).score
         student_scores.append((student, submission_score))
     return student_scores
+
+
+@authentication_required
+def download_content(request, file_path):
+    file_path = file_path.replace('-', '/')
+    file_path_breakdown = file_path.split('/')
+    file = open(file_path, 'rb')
+    mime_type = mimetypes.guess_type(file_path)
+    response = HttpResponse(file, content_type=mime_type)
+    response['Content-Disposition'] = "attachment; filename=%s" % file_path_breakdown[-1]
+    return response
 
 
 def login(request):

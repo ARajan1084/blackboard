@@ -11,5 +11,6 @@ urlpatterns = [
     path('class/discussions/new/<str:class_id>', views.new_thread, name='teacher-new-thread'),
     path('new_assignment/<str:class_id>', views.new_assignment, name='teacher-new-assignment'),
     path('new_category/<str:class_id>/<str:edit>', views.new_category, name='teacher-new-category'),
-    path('assignment/<str:class_id>/<str:assignment_id>/<str:edit>', views.assignment, name='teacher-assignment')
+    path('assignment/<str:class_id>/<str:assignment_id>/<str:edit>', views.assignment, name='teacher-assignment'),
+    path('download/<str:file_path>', views.download_content, name='teacher-download-content')
 ]

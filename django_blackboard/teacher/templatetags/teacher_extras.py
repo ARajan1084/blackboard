@@ -45,3 +45,8 @@ def get_element(list, index):
 @register.filter
 def get_thread_field(form, discussion_id):
     return form[discussion_id + '_message'], form[discussion_id + '_media']
+
+
+@register.filter
+def download_format(path):
+    return path.replace('/', '-')
