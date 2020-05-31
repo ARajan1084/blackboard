@@ -20,12 +20,6 @@ class ThreadReplyForm(forms.Form):
         return self.fields[discussion_id + '_message'], self.fields[discussion_id + '_media']
 
 
-class NewThreadForm(forms.Form):
-    title = forms.CharField(required=True)
-    message = forms.CharField(max_length=200, required=True)
-    media = forms.FileField(required=False)
-
-
 class Scores(forms.Form):
     def __init__(self, *args, **kwargs):
         student_scores = kwargs.pop('student_scores')
@@ -70,6 +64,7 @@ class CreateAssignmentForm(forms.Form):
     due_time = forms.TimeField(widget=TimeInput, required=False)
     est_completion_time_min = forms.IntegerField(required=False)
     create_discussion_thread = forms.BooleanField(initial=True)
+    attached_media = forms.FileField(required=False)
 
     def __init__(self, *args, **kwargs):
         self.categories = kwargs.pop('categories')

@@ -166,7 +166,7 @@ class Submission(models.Model):
     enrollment_id = models.CharField(max_length=100, unique=False)
     date_submitted = models.DateTimeField(null=True, default=None)
     score = models.IntegerField(unique=False, null=True, default=None)
-    file = models.FileField(upload_to='media/submission_files', null=True, default=None, unique=False)
+    file = models.FileField(null=True, default=None, unique=False)
     comments = models.CharField(max_length=200, null=True, default=None, unique=False)
     cal_event_id = models.CharField(max_length=50, null=True, default=None, unique=False)
     complete = models.BooleanField(null=True, default=False)

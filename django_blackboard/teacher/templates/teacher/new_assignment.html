@@ -8,9 +8,11 @@
 {% block content %}
     <div class="container pt-3">
         <h2>New Assignment:</h2>
-        <h1>{{ form.errors }}</h1>
-        <h1>{{ form.non_field_errors }}</h1>
-        <form method="post">
+        {% if form.errors or form.non_field_errors %}
+            <p class="alert alert-danger">{{ form.errors }}</p>
+            <p class="alert alert-danger">{{ form.non_field_errors }}</p>
+        {% endif %}
+        <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="form-group">
                 <label for="assignment_name">Name: </label>
@@ -49,7 +51,12 @@
                     </div>
                 </div>
             </div>
-
+            <div class="row pl-3 pt-2">
+                <div class="form-group">
+                    <label class="text-muted">Attached File:</label>
+                    {{ form.attached_media }}
+                </div>
+            </div>
             <div class="">
                 <button class="btn btn-danger" type="button" onclick="location.href='{% url 'teacher-class' element='gradesheet' class_id=class_id %}'">Discard</button>
                 <button name="assign" type="submit" class="btn btn-primary float-right">Assign</button>

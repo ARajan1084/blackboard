@@ -50,7 +50,11 @@
                                             <td class="nowrap">- / {{ submission.0.points }}</td>
                                         {% endif %}
                                     {% endfor %}
-                                    <td><span class="nowrap">{{ grades|get_item:student|get_element:1|floatformat:2 }}% - {{ grades|get_item:student|get_element:0 }}</span></td>
+                                    {% if grades|get_item:student|get_element:1 %}
+                                        <td><span class="nowrap">{{ grades|get_item:student|get_element:1|floatformat:2 }}% - {{ grades|get_item:student|get_element:0 }}</span></td>
+                                    {% else %}
+                                        <td class="text-center"><small class="text-muted">N/A</small></td>
+                                    {% endif %}
                                 </tr>
                             {% endfor %}
                         </tbody>

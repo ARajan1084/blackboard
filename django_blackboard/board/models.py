@@ -84,11 +84,13 @@ class Class(models.Model):
         if self._state.adding:
             os.mkdir(os.path.join(MEDIA_ROOT + '/resources', str(self.id.hex)))
             os.mkdir(os.path.join(MEDIA_ROOT + '/submission_files', str(self.id.hex)))
+            os.mkdir(os.path.join(MEDIA_ROOT + '/assignment_media', str(self.id.hex)))
         super(Class, self).save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
         shutil.rmtree(os.path.join(MEDIA_ROOT + '/resources', str(self.id.hex)))
-        shutil.rmtree(os.path.join(MEDIA_ROOT + '/resources', str(self.id.hex)))
+        shutil.rmtree(os.path.join(MEDIA_ROOT + '/submission_files', str(self.id.hex)))
+        shutil.rmtree(os.path.join(MEDIA_ROOT + '/assignment_media', str(self.id.hex)))
         super(Class, self).delete(*args, **kwargs)
 
     def __str__(self):
@@ -109,6 +111,13 @@ class ClassAssignments(models.Model):
         db_table = 'class_assignments'
 
 
+def generate_assignment_media_file_path(self, filename):
+    class_ref = ClassAssignments.objects.all().get(assignment_id=str(self.id.hex))
+    path = os.path.join(MEDIA_ROOT + '/assignment_media/' + class_ref.class_id, str(self.id.hex))
+    os.mkdir(path)
+    return os.path.join(path, filename)
+
+
 class Assignment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
     assignment_name = models.CharField(max_length=80, unique=False)
@@ -120,6 +129,7 @@ class Assignment(models.Model):
     assigned = models.DateTimeField(null=True)
     due_date = models.DateTimeField(null=True)
     est_completion_time_min = models.IntegerField(null=True, default=None)
+    attached_media = models.FileField(null=True, upload_to=generate_assignment_media_file_path, max_length=300)
 
     def save(self, *args, **kwargs):
         if self._state.adding:
@@ -133,6 +143,7 @@ class Assignment(models.Model):
     def delete(self, *args, **kwargs):
         class_ref = ClassAssignments.objects.all().get(assignment_id=str(self.id.hex))
         shutil.rmtree(os.path.join(MEDIA_ROOT + '/submission_files/' + class_ref.class_id, str(self.id.hex)))
+        shutil.rmtree(os.path.join(MEDIA_ROOT + '/media/' + class_ref.class_id, str(self.id.hex)))
         super(Assignment, self).save(*args, **kwargs)
 
     def __str__(self):

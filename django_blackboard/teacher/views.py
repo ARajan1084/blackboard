@@ -224,7 +224,7 @@ def new_assignment(request, class_id):
         categories.append((category_id.category_id, category_name))
 
     if request.method == 'POST':
-        form = CreateAssignmentForm(request.POST, categories=categories)
+        form = CreateAssignmentForm(request.POST, request.FILES, categories=categories)
         if form.is_valid():
             name = form.cleaned_data.get('name')
             description = form.cleaned_data.get('description')
@@ -235,13 +235,15 @@ def new_assignment(request, class_id):
             est_completion_time_min = form.cleaned_data.get('est_completion_time_min')
             create_discussion_thread = form.cleaned_data.get('create_discussion_thread')
             due = datetime.combine(due_date, due_time)
+            attached_media = request.FILES['attached_media']
             assignment = Assignment(assignment_name=name,
                                     assignment_description=description,
                                     category_id=category_id,
                                     points=points,
                                     due_date=due,
                                     assigned=timezone.now(),
-                                    est_completion_time_min=est_completion_time_min)
+                                    est_completion_time_min=est_completion_time_min,
+                                    attached_media=attached_media)
             enrollments = ClassEnrollment.objects.all().filter(class_id=class_id)
             if 'assign' in request.POST:
                 for enrollment in enrollments:
@@ -269,7 +271,7 @@ def new_assignment(request, class_id):
                     class_discussion = ClassDiscussions(class_id=class_id, discussion_id=str(discussion.id.hex))
                     class_discussion.save()
             assignment.save()
-            return gradesheet(request, class_id, active='gradesheet')
+            return redirect('teacher-class', class_id=class_id, element='gradesheet')
         else:
             print(form.errors)
             print(form.non_field_errors())
