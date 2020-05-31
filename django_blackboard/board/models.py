@@ -1,7 +1,10 @@
+import os
+import uuid
+import shutil
 from django.db import models
 from django.contrib.auth.models import User
-import uuid
 from django.utils import timezone
+from django_blackboard.settings import MEDIA_ROOT
 
 
 class Discussion(models.Model):
@@ -77,6 +80,17 @@ class Class(models.Model):
     period = models.IntegerField()
     weighted = models.BooleanField(unique=False, default=False)
 
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            os.mkdir(os.path.join(MEDIA_ROOT + '/resources', str(self.id.hex)))
+            os.mkdir(os.path.join(MEDIA_ROOT + '/submission_files', str(self.id.hex)))
+        super(Class, self).save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        shutil.rmtree(os.path.join(MEDIA_ROOT + '/resources', str(self.id.hex)))
+        shutil.rmtree(os.path.join(MEDIA_ROOT + '/resources', str(self.id.hex)))
+        super(Class, self).delete(*args, **kwargs)
+
     def __str__(self):
         return self.course_id + '_' + self.teacher_id
 
@@ -101,17 +115,25 @@ class Assignment(models.Model):
     category_id = models.CharField(max_length=100, unique=False)
     assignment_description = models.CharField(max_length=150, unique=False, null=True)
     points = models.IntegerField()
-    created = models.DateTimeField(null=True, auto_now=True)
-    updated = models.DateTimeField(null=True)
+    created = models.DateTimeField(null=True, auto_now_add=True)
+    updated = models.DateTimeField(null=True, auto_now=True)
     assigned = models.DateTimeField(null=True)
     due_date = models.DateTimeField(null=True)
     est_completion_time_min = models.IntegerField(null=True, default=None)
 
-    def assign(self, due_date):
-        if self.assigned is None:
-            self.assigned = timezone.now()
-        self.updated = timezone.now()
-        self.due_date = due_date
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            try:
+                class_ref = ClassAssignments.objects.all().get(assignment_id=str(self.id.hex))
+                os.mkdir(os.path.join(MEDIA_ROOT + '/submission_files/' + class_ref.class_id, str(self.id.hex)))
+            except:
+                pass
+        super(Assignment, self).save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        class_ref = ClassAssignments.objects.all().get(assignment_id=str(self.id.hex))
+        shutil.rmtree(os.path.join(MEDIA_ROOT + '/submission_files/' + class_ref.class_id, str(self.id.hex)))
+        super(Assignment, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.assignment_name
