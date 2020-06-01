@@ -1,9 +1,14 @@
+import mimetypes
+import os
 import uuid
+
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.utils import timezone
 
+from django_blackboard.settings import MEDIA_ROOT
 from .forms import UserLoginForm, ThreadReplyForm, NewThreadForm
 from .models import Student, ClassEnrollment, Submission
 from board.models import Course, Class, ClassAssignments, Assignment, Category, ClassCategories, Schedule, Notification, \
@@ -97,13 +102,21 @@ def dashboard(request, enrollment_id, active):
 def resources(request, enrollment_id, active):
     enrollment = ClassEnrollment.objects.all().get(id=uuid.UUID(enrollment_id).hex)
     klass = Class.objects.all().get(id=uuid.UUID(enrollment.class_id).hex)
+    resources_path = os.path.join(MEDIA_ROOT + '/resources/', str(klass.id.hex))
     course = Course.objects.all().get(course_id=klass.course_id)
     period = klass.period
+
+    files = []
+    for path in os.listdir(resources_path):
+        full_path = os.path.join(resources_path, path)
+        files.append((full_path, path))
+
     context = {
         'period': period,
         'course': course,
         'enrollment_id': enrollment_id,
-        'active': active
+        'active': active,
+        'files': files
     }
     return render(request, 'student/resources.html', context)
 
@@ -234,6 +247,17 @@ def home(request):
         'class_workloads': class_workloads
     }
     return render(request, 'student/home.html', context)
+
+
+@authentication_required
+def download_content(request, file_path):
+    file_path = file_path.replace('-', '/')
+    file_path_breakdown = file_path.split('/')
+    file = open(file_path, 'rb')
+    mime_type = mimetypes.guess_type(file_path)
+    response = HttpResponse(file, content_type=mime_type)
+    response['Content-Disposition'] = "attachment; filename=%s" % file_path_breakdown[-1]
+    return response
 
 
 def login(request):

@@ -26,3 +26,8 @@ def uuid_to_str(uuid):
 @register.filter
 def get_thread_field(form, discussion_id):
     return form[discussion_id + '_message'], form[discussion_id + '_media']
+
+
+@register.filter
+def download_format(path):
+    return path.replace('/', '-')

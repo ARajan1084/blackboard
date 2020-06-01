@@ -1,8 +1,27 @@
 {% extends 'student/class.html' %}
+{% load widget_tweaks %}
+{% load student_extras %}
 {% load static %}
 
 {% block css %}{% endblock %}
 {% block title %}P{{ period }}: Resources{% endblock %}
 
 {% block content %}
+    {% if files %}
+        <div class="row pt-3">
+            <div class="col">
+                <ul class="list-group">
+                    {% for path, file in files %}
+                        <li class="list-group-item">
+                            <a href="{% url 'student-download-content' file_path=path|download_format %}">{{ file }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    {% else %}
+        <div class="row justify-content-center mt-2">
+            <small class="text-center">No resources to show.</small>
+        </div>
+    {% endif %}
 {% endblock %}
