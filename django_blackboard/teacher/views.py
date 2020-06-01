@@ -15,7 +15,7 @@ from django.contrib.auth import authenticate, login as auth_login, logout as aut
 from django.utils import timezone
 
 from .forms import UserLoginForm, CreateAssignmentForm, Scores, CreateCategoryForm, EditCategoriesForm, ThreadReplyForm, \
-    NewThreadForm
+    NewThreadForm, ResourceUploadForm
 from .models import Teacher
 from board.models import Class, ClassAssignments, Course, Assignment, Category, ClassCategories, Notification, Discussion, ClassDiscussions
 from student.models import ClassEnrollment, Student, Submission
@@ -120,14 +120,32 @@ def dashboard(request, class_id, active):
 
 @authentication_required
 def resources(request, class_id, active):
+    resources_path = os.path.join(MEDIA_ROOT + '/resources/', class_id)
+    if request.method == 'POST':
+        form = ResourceUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            file = request.FILES['media']
+            file_path = resources_path + '/' + file.name
+            with open(file_path, 'wb+') as destination:
+                for chunk in file.chunks():
+                    destination.write(chunk)
     klass = Class.objects.all().get(id=uuid.UUID(class_id).hex)
     course_name = Course.objects.all().get(course_id=klass.course_id).course_name
     period = klass.period
+
+    form = ResourceUploadForm()
+    files = []
+    for path in os.listdir(resources_path):
+        full_path = os.path.join(resources_path, path)
+        files.append((full_path, path))
+
     context = {
         'active': active,
         'class_id': class_id,
         'period': period,
-        'course_name': course_name
+        'course_name': course_name,
+        'form': form,
+        'files': files
     }
     return render(request, 'teacher/resources.html', context)
 

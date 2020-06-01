@@ -1,26 +1,30 @@
 {% extends 'teacher/class.html' %}
 {% load teacher_extras %}
+{% load widget_tweaks %}
 {% load static %}
 
 {% block css %}{% endblock %}
 {% block title %}P{{ period }}: Resources{% endblock %}
 
 {% block content %}
-    <div class="card card-body pt-4">
-        <div class="row">
-            <div class="col-lg-3" style="padding-right:20px; border-right: 1px solid #ccc;">
-                <ul class="nav flex-column">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Example Folder</a>
-                        <div class="dropdown-menu">
-                            <a href="" class="dropdown-item">Example File</a>
-                        </div>
+    <div class="row pt-3">
+        <div class="col">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <button class="btn btn-primary float-right" type="submit">Upload</button>
+                {{ form.media|add_class:'float-right' }}
+            </form>
+        </div>
+    </div>
+    <div class="row pt-2">
+        <div class="col">
+            <ul class="list-group">
+                {% for path, file in files %}
+                    <li class="list-group-item">
+                        <a href="{% url 'teacher-download-content' file_path=path|download_format %}">{{ file }}</a>
                     </li>
-                </ul>
-            </div>
-            <div class="col-lg-8">
-                <h3>Who you callin Mike</h3>
-            </div>
+                {% endfor %}
+            </ul>
         </div>
     </div>
 {% endblock %}

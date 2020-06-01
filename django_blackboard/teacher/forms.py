@@ -1,6 +1,10 @@
 from django import forms
 
 
+class ResourceUploadForm(forms.Form):
+    media = forms.FileField()
+
+
 class NewThreadForm(forms.Form):
     title = forms.CharField(required=True)
     message = forms.CharField(max_length=200, required=True)
@@ -17,7 +21,6 @@ class ThreadReplyForm(forms.Form):
     def add_field(self, discussion_id):
         self.fields[discussion_id + '_message'] = forms.CharField(max_length=200, required=False)
         self.fields[discussion_id + '_media'] = forms.FileField(required=False)
-        return self.fields[discussion_id + '_message'], self.fields[discussion_id + '_media']
 
 
 class Scores(forms.Form):
