@@ -22,7 +22,7 @@
                                 onclick="location.href='{% url 'teacher-assignment' class_id=class_id assignment_id=assignment.id|uuid_to_str edit='edit=true' %}'">
                             <i class="fa fa-pencil-alt"></i></button>
                         <button type="button" class="btn btn-outline-success float-right mr-2" title="Export"
-                                onclick="location.href=''">
+                                onclick="location.href='{% url 'teacher-assignment-export' class_id=class_id assignment_id=assignment.id|uuid_to_str %}'">
                             <i class="fa fa-file-excel"></i></button>
                         {% if assignment.attached_media %}
                             <button type="button" class="btn btn-outline-secondary float-right mr-2" title="Download Directions"

@@ -1,9 +1,12 @@
 import mimetypes
+import os
 import uuid
 from datetime import datetime
 
+import pandas as pd
 from django.http import HttpResponse
 
+from django_blackboard.settings import MEDIA_ROOT
 from teacher.analysis import get_score_dist, get_score_hist, get_score_box, get_general_stats
 
 from django.shortcuts import render, redirect, reverse
@@ -18,7 +21,7 @@ from board.models import Class, ClassAssignments, Course, Assignment, Category, 
 from student.models import ClassEnrollment, Student, Submission
 from .decorators import authentication_required
 from .utils import fetch_assignments_with_categories, fetch_gradesheet_data, fetch_raw_grades, fetch_category_breakdown, \
-    fetch_full_thread, fetch_class_discussions, fetch_all_discussions
+    fetch_full_thread, fetch_class_discussions, fetch_all_discussions, get_submissions, get_student_scores
 
 
 @authentication_required
@@ -415,32 +418,37 @@ def assignment(request, class_id, assignment_id, edit):
     return render(request, 'teacher/assignment.html', context)
 
 
+def assignment_export(request, class_id, assignment_id):
+    assignment = Assignment.objects.all().get(id=uuid.UUID(assignment_id))
+    data = {
+        'student': [],
+        'score': [],
+        'comments': [],
+    }
+
+    enrollment_refs = ClassEnrollment.objects.all().filter(class_id=class_id)
+    for enrollment_ref in enrollment_refs:
+        student = Student.objects.all().get(student_id=enrollment_ref.student_id)
+        submission = Submission.objects.all().get(enrollment_id=str(enrollment_ref.id.hex), assignment_id=assignment_id)
+        data['student'].append(student.first_name + ' ' + student.last_name)
+        data['score'].append(submission.score)
+        data['comments'].append(submission.comments)
+
+    path = os.path.join(MEDIA_ROOT + '/assignment_media/' + class_id, assignment_id + '/scores.xlsx')
+    writer = pd.ExcelWriter(path)
+    df = pd.DataFrame(data)
+    df.to_excel(writer, header=True, index=False)
+    writer.save()
+
+    file = open(path, 'rb')
+    response = HttpResponse(file, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename="{}"'.format(assignment.assignment_name + ' Scores.xlsx')
+    return response
+
+
 def get_course(class_id):
     course_id = Class.objects.all().get(id=uuid.UUID(class_id)).course_id
     return Course.objects.all().get(course_id=course_id)
-
-
-def get_submissions(class_id, assignment_id):
-    class_enrollments = ClassEnrollment.objects.all().filter(class_id=class_id)
-    submissions = []
-    for enrollment in class_enrollments:
-        submission = Submission.objects.all().get(enrollment_id=str(enrollment.id).replace('-', ''),
-                                                  assignment_id=assignment_id)
-        submissions.append(submission)
-    return submissions
-
-
-def get_student_scores(assignment_id):
-    class_assignment = ClassAssignments.objects.all().get(assignment_id=assignment_id)
-    klass = Class.objects.all().get(id=uuid.UUID(class_assignment.class_id).hex)
-    class_enrollments = ClassEnrollment.objects.all().filter(class_id=str(klass.id).replace('-', ''))
-    student_scores = []
-    for enrollment in class_enrollments:
-        student = Student.objects.all().get(student_id=enrollment.student_id)
-        submission_score = Submission.objects.all().get(enrollment_id=str(enrollment.id).replace('-', ''),
-                                                        assignment_id=assignment_id).score
-        student_scores.append((student, submission_score))
-    return student_scores
 
 
 @authentication_required

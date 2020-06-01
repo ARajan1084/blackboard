@@ -12,5 +12,6 @@ urlpatterns = [
     path('new_assignment/<str:class_id>', views.new_assignment, name='teacher-new-assignment'),
     path('new_category/<str:class_id>/<str:edit>', views.new_category, name='teacher-new-category'),
     path('assignment/<str:class_id>/<str:assignment_id>/<str:edit>', views.assignment, name='teacher-assignment'),
+    path('export/assignment/<str:class_id>/<str:assignment_id>', views.assignment_export, name='teacher-assignment-export'),
     path('download/<str:file_path>', views.download_content, name='teacher-download-content')
 ]

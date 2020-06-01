@@ -1,12 +1,35 @@
 import uuid
 from collections import OrderedDict
 
-from student.models import Student, Submission
-from board.models import ClassAssignments, Assignment, Category, ClassCategories, Discussion, ClassDiscussions
+from student.models import Student, Submission, ClassEnrollment
+from board.models import ClassAssignments, Assignment, Category, ClassCategories, Discussion, ClassDiscussions, Class
 from student.utils import calculate_grade
 from teacher.models import Teacher
 
 from .forms import ThreadReplyForm
+
+
+def get_student_scores(assignment_id):
+    class_assignment = ClassAssignments.objects.all().get(assignment_id=assignment_id)
+    klass = Class.objects.all().get(id=uuid.UUID(class_assignment.class_id).hex)
+    class_enrollments = ClassEnrollment.objects.all().filter(class_id=str(klass.id).replace('-', ''))
+    student_scores = []
+    for enrollment in class_enrollments:
+        student = Student.objects.all().get(student_id=enrollment.student_id)
+        submission_score = Submission.objects.all().get(enrollment_id=str(enrollment.id).replace('-', ''),
+                                                        assignment_id=assignment_id).score
+        student_scores.append((student, submission_score))
+    return student_scores
+
+
+def get_submissions(class_id, assignment_id):
+    class_enrollments = ClassEnrollment.objects.all().filter(class_id=class_id)
+    submissions = []
+    for enrollment in class_enrollments:
+        submission = Submission.objects.all().get(enrollment_id=str(enrollment.id).replace('-', ''),
+                                                  assignment_id=assignment_id)
+        submissions.append(submission)
+    return submissions
 
 
 def fetch_class_discussions(class_id):
