@@ -260,7 +260,7 @@ def new_assignment(request, class_id):
             est_completion_time_min = form.cleaned_data.get('est_completion_time_min')
             create_discussion_thread = form.cleaned_data.get('create_discussion_thread')
             due = datetime.combine(due_date, due_time)
-            attached_media = request.FILES['attached_media']
+            attached_media = request.FILES.get('attached_media')
             assignment = Assignment(assignment_name=name,
                                     assignment_description=description,
                                     category_id=category_id,

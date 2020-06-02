@@ -143,7 +143,7 @@ class Assignment(models.Model):
     def delete(self, *args, **kwargs):
         class_ref = ClassAssignments.objects.all().get(assignment_id=str(self.id.hex))
         shutil.rmtree(os.path.join(MEDIA_ROOT + '/submission_files/' + class_ref.class_id, str(self.id.hex)))
-        shutil.rmtree(os.path.join(MEDIA_ROOT + '/assignment_files/' + class_ref.class_id, str(self.id.hex)))
+        shutil.rmtree(os.path.join(MEDIA_ROOT + '/assignment_media/' + class_ref.class_id, str(self.id.hex)))
         super(Assignment, self).save(*args, **kwargs)
 
     def __str__(self):

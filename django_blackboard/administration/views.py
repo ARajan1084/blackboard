@@ -188,7 +188,11 @@ def add_teacher(request):
                 user.save()
                 teacher.user = user
                 try:
-                    teacher_get_or_create = Teacher.objects.get_or_create(user=user, email_address=teacher.email_address)
+                    teacher_get_or_create = Teacher.objects.get_or_create(user=user,
+                                                                          email_address=teacher.email_address,
+                                                                          first_name=teacher.first_name,
+                                                                          last_name=teacher.last_name,
+                                                                          pref_title=teacher.pref_title)
                     num_teachers_added += int(teacher_get_or_create[1])
                 except IntegrityError:
                     pass
@@ -236,13 +240,11 @@ def add_teacher(request):
                 if user_get_or_create[1]:
                     user.set_password(password)
                 user.save()
-                teacher = Teacher(user=user,
-                                  first_name=first_name,
-                                  last_name=last_name,
-                                  email_address=email_address,
-                                  pref_title=pref_title)
                 try:
-                    teacher_get_or_create = Teacher.objects.get_or_create(user=user, email_address=teacher.email_address)
+                    teacher_get_or_create = Teacher.objects.get_or_create(user=user,
+                                                                          email_address=email_address,
+                                                                          first_name=first_name,
+                                                                          last_name=last_name)
                     if not teacher_get_or_create[1]:
                         raise IntegrityError
                     messages.success(request, 'Teacher successfully added!')
