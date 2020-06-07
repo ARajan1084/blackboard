@@ -44,8 +44,13 @@
                                 <tr>
                                     <td style="border-left: 1px solid #FFF"><span class="nowrap">{{ student|name }}</span></td>
                                     {% for submission in values %}
-                                        {% if submission.1.score %}
-                                            <td class="nowrap">{{ submission.1.score }} / {{ submission.0.points }}</td>
+                                        {% if submission.1.score != null %}
+                                            <td
+                                                {% if submission.1.score == 0 %}
+                                                    class="nowrap missing"
+                                                {% else %}
+                                                    class="nowrap"
+                                                {% endif %}>{{ submission.1.score|floatformat:1 }} / {{ submission.0.points }}</td>
                                         {% else %}
                                             <td class="nowrap">- / {{ submission.0.points }}</td>
                                         {% endif %}

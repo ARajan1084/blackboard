@@ -28,7 +28,7 @@ class Scores(forms.Form):
         student_scores = kwargs.pop('student_scores')
         super(Scores, self).__init__(*args, **kwargs)
         for student_score in student_scores:
-            self.fields[student_score[0].student_id] = forms.IntegerField(required=False, initial=student_score[1])
+            self.fields[student_score[0].student_id] = forms.DecimalField(required=False, initial=student_score[1], decimal_places=2)
 
 
 class UserLoginForm(forms.Form):

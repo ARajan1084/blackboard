@@ -14,6 +14,7 @@ COLORS = ['darkred', 'orange', 'green', 'lightskyblue', 'lightslategrey']
 def get_general_stats(scores, points):
     if not scores:
         return
+    scores = [float(score) for score in scores]
     stats = {
         'mean': mean(scores),
         'mean_perc': (mean(scores)*100.0)/points,
@@ -29,10 +30,10 @@ def get_score_dist(scores):
     if not scores:
         return
     color = random.choice(COLORS)
-    x_min = min(scores)
-    x_max = max(scores)
-    avg = mean(scores)
-    std = stdev(scores)
+    x_min = float(min(scores))
+    x_max = float(max(scores))
+    avg = float(mean(scores))
+    std = float(stdev(scores))
     x = np.linspace(x_min, x_max)
     y = scipy.stats.norm.pdf(x, avg, std)
 
@@ -64,6 +65,7 @@ def get_score_hist(scores):
 def get_score_box(scores):
     if not scores:
         return
+    scores = [float(score) for score in scores]
     fig, ax = plt.subplots()
     ax.boxplot(scores, vert=False, widths=0.6)
     ax.height = 200

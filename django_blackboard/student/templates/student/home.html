@@ -45,15 +45,17 @@
             </div>
             <div class="col-lg">
                 <h2>Notifications</h2>
-                <table class="table">
-                    <tbody>
-                        {% for notification in notifications %}
-                            <tr>
-                                <td><a href="{{ notification.link|firm_url:request }}">{{ notification.message }}</a></td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <div style="overflow: auto !important; max-height: 350px;">
+                    <table class="table">
+                        <tbody>
+                            {% for notification in notifications %}
+                                <tr>
+                                    <td><a href="{{ notification.link|firm_url:request }}">{{ notification.message }}</a></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
         <div class="row">

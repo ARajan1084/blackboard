@@ -9,6 +9,14 @@ from teacher.models import Teacher
 from .forms import ThreadReplyForm
 
 
+def get_assignments(class_id):
+    assignments = []
+    assignment_refs = ClassAssignments.objects.all().filter(class_id=class_id)
+    for assignment_ref in assignment_refs:
+        assignments.append(Assignment.objects.all().get(id=uuid.UUID(assignment_ref.assignment_id)))
+    return assignments
+
+
 def get_student_scores(assignment_id):
     class_assignment = ClassAssignments.objects.all().get(assignment_id=assignment_id)
     klass = Class.objects.all().get(id=uuid.UUID(class_assignment.class_id).hex)
@@ -81,7 +89,6 @@ def fetch_name(user):
     except:
         pass
     return None
-
 
 
 def fetch_category_breakdown(klass, enrollments):

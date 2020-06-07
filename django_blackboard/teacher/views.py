@@ -7,6 +7,8 @@ import pandas as pd
 from django.http import HttpResponse
 
 from django_blackboard.settings import MEDIA_ROOT
+
+from student.utils import calculate_grade
 from teacher.analysis import get_score_dist, get_score_hist, get_score_box, get_general_stats
 
 from django.shortcuts import render, redirect, reverse
@@ -18,10 +20,11 @@ from .forms import UserLoginForm, CreateAssignmentForm, Scores, CreateCategoryFo
     NewThreadForm, ResourceUploadForm
 from .models import Teacher
 from board.models import Class, ClassAssignments, Course, Assignment, Category, ClassCategories, Notification, Discussion, ClassDiscussions
-from student.models import ClassEnrollment, Student, Submission
+from student.models import ClassEnrollment, Student, Submission, GradeHistory
 from .decorators import authentication_required
 from .utils import fetch_assignments_with_categories, fetch_gradesheet_data, fetch_raw_grades, fetch_category_breakdown, \
-    fetch_full_thread, fetch_class_discussions, fetch_all_discussions, get_submissions, get_student_scores
+    fetch_full_thread, fetch_class_discussions, fetch_all_discussions, get_submissions, get_student_scores, \
+    get_assignments
 
 
 @authentication_required
@@ -389,6 +392,12 @@ def assignment(request, class_id, assignment_id, edit):
                 if 'save' in request.POST:
                     student = Student.objects.all().get(student_id=student_id)
                     if submission.score != score:
+                        assignments = get_assignments(class_id)
+                        gradeUpdate = GradeHistory(enrollment_id=str(enrollment.id.hex),
+                                                   grade=calculate_grade(assignments=assignments,
+                                                                         enrollment_id=str(enrollment.id.hex),
+                                                                         weighted=klass.weighted)[1])
+                        gradeUpdate.save()
                         message = 'Scores for ' + assignment.assignment_name + ' have been updated.'
                         url = reverse('student-class',
                                       kwargs={'element': 'grades', 'enrollment_id': str(enrollment.id.hex)})

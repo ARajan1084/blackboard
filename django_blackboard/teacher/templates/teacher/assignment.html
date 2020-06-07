@@ -4,7 +4,9 @@
 {% load teacher_extras %}
 
 {% block title %}P{{ period }}: {{ assignment.assignment_name }}{% endblock %}
-{% block css %}{% endblock %}
+{% block css %}
+    <link rel="stylesheet" href="{% static 'teacher/assignment.css' %}">
+{% endblock %}
 
 {% block content %}
     <div class="container">
@@ -48,7 +50,10 @@
                                     {% if edit == "edit=true" %}
                                         <td> {{ form|get_field:student|add_class:'form-control' }}</td>
                                     {% else %}
-                                        <td>{{ submission.score }} / {{ assignment.points }}</td>
+                                        <td
+                                            {% if submission.score == 0 %}
+                                                class="missing"
+                                            {% endif %}>{{ submission.score|floatformat:1 }} / {{ assignment.points }}</td>
                                     {% endif %}
                                 </tr>
                             {% endfor %}

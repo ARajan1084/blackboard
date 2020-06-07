@@ -9,8 +9,10 @@ from django.contrib.auth import authenticate, login as auth_login, logout as aut
 from django.utils import timezone
 
 from django_blackboard.settings import MEDIA_ROOT
+
+from .analysis import get_grade_trend
 from .forms import UserLoginForm, ThreadReplyForm, NewThreadForm
-from .models import Student, ClassEnrollment, Submission
+from .models import Student, ClassEnrollment, Submission, GradeHistory
 from board.models import Course, Class, ClassAssignments, Assignment, Category, ClassCategories, Schedule, Notification, \
     ClassDiscussions, Discussion
 from .utils import calculate_grade, get_student_submissions, get_enrollments, get_class_data, \
@@ -41,6 +43,7 @@ def grades(request, enrollment_id, active):
     klass = Class.objects.all().get(id=uuid.UUID(enrollment.class_id).hex)
     course = Course.objects.all().get(course_id=klass.course_id)
     period = klass.period
+
     assignment_ids = ClassAssignments.objects.all().filter(class_id=enrollment.class_id)
     assignments = {}
     for assignment_ref in assignment_ids:
@@ -54,6 +57,8 @@ def grades(request, enrollment_id, active):
             print(assignment)
 
     grades = calculate_grade(assignments.keys(), enrollment_id, klass.weighted)
+    grade_history = GradeHistory.objects.all().filter(enrollment_id=enrollment_id)
+    grade_trend = get_grade_trend(grade_history)
     context = {
         'active': active,
         'weighted': klass.weighted,
@@ -61,7 +66,8 @@ def grades(request, enrollment_id, active):
         'period': period,
         'course': course,
         'assignments': assignments,
-        'grades': grades
+        'grades': grades,
+        'grade_trend': grade_trend
     }
     return render(request, 'student/grades.html', context)
 

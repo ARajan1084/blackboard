@@ -165,7 +165,7 @@ class Submission(models.Model):
     assignment_id = models.CharField(max_length=100, unique=False)
     enrollment_id = models.CharField(max_length=100, unique=False)
     date_submitted = models.DateTimeField(null=True, default=None)
-    score = models.IntegerField(unique=False, null=True, default=None)
+    score = models.DecimalField(unique=False, null=True, default=None, decimal_places=2, max_digits=8)
     file = models.FileField(null=True, default=None, unique=False)
     comments = models.CharField(max_length=200, null=True, default=None, unique=False)
     cal_event_id = models.CharField(max_length=50, null=True, default=None, unique=False)
@@ -189,3 +189,16 @@ class Submission(models.Model):
     class Meta:
         db_table = 'submissions'
         order_with_respect_to = 'assignment_id'
+
+
+class GradeHistory(models.Model):
+    enrollment_id = models.CharField(max_length=36, unique=False)
+    date_updated = models.DateTimeField(auto_now_add=True)
+    grade = models.DecimalField(max_digits=5, decimal_places=2)
+
+    def __str__(self):
+        return self.enrollment_id + '_' + str(self.date_updated)
+
+    class Meta:
+        db_table = 'grade_history'
+        order_with_respect_to = 'enrollment_id'
